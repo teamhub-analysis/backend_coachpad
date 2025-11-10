@@ -1,45 +1,32 @@
 package com.coachpad.persistence.adapter;
 
+import com.coachpad.mapper.CoachMapper;
 import com.coachpad.model.CoachModel;
 import com.coachpad.persistence.entity.CoachEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
+@RequiredArgsConstructor
 public class CoachAdapter {
 
-    // 🔁 Convertir une Entity vers un Model
-    public CoachModel toModel(CoachEntity entity) {
-        if (entity == null) return null;
+    private final CoachMapper mapper;
 
-        return CoachModel.builder()
-                .id(entity.getId())
-                .firstName(entity.getFirstName())
-                .lastName(entity.getLastName())
-                .fullName(entity.getDisplayName())
-                .nationality(entity.getNationality())
-                .photoUrl(entity.getPhotoUrl())
-                .licenseLevel(entity.getLicenseLevel())
-                .contractEndDate(entity.getContractEndDate())
-                .coachingPhilosophy(entity.getCoachingPhilosophy())
-                .coachingPhilosophyDescription(entity.getCoachingPhilosophyDescription())
-                .build();
+    public CoachModel toModel(CoachEntity entity) {
+        return mapper.toModel(entity);
     }
 
-    // 🔁 Convertir un Model vers une Entity
     public CoachEntity toEntity(CoachModel model) {
-        if (model == null) return null;
+        return mapper.toEntity(model);
+    }
 
-        return CoachEntity.builder()
-                .id(model.getId())
-                .firstName(model.getFirstName())
-                .lastName(model.getLastName())
-                .fullName(model.getFullName())
-                .nationality(model.getNationality())
-                .photoUrl(model.getPhotoUrl())
-                .licenseLevel(model.getLicenseLevel())
-                .contractEndDate(model.getContractEndDate())
-                .coachingPhilosophy(model.getCoachingPhilosophy())
-                .coachingPhilosophyDescription(model.getCoachingPhilosophyDescription())
-                .build();
+    public List<CoachModel> toModelList(List<CoachEntity> entities) {
+        return entities.stream().map(mapper::toModel).toList();
+    }
+
+    public List<CoachEntity> toEntityList(List<CoachModel> models) {
+        return models.stream().map(mapper::toEntity).toList();
     }
 }

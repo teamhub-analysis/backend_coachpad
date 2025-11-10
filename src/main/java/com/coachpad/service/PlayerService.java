@@ -28,4 +28,6 @@ public interface PlayerService {
     PlayerDTO updatePlayer(Long id, PlayerDTO playerDTO);
     void deletePlayer(Long id);
     void deletePlayersByTeamId(Long teamId);
+      PlayerDTO createPlayerForTeam(Long teamId, PlayerDTO playerDTO);
+    List<PlayerDTO> createPlayersForTeam(Long teamId, List<PlayerDTO> playerDTOs);
 }

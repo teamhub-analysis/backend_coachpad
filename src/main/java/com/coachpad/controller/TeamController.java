@@ -1,7 +1,9 @@
 package com.coachpad.controller;
 
 import com.coachpad.dto.TeamDTO;
+import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.service.TeamService;
+import com.coachpad.service.TeamDesignService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,19 +19,14 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
+    private final TeamDesignService teamDesignService;
 
-    /**
-     * GET /api/teams - Récupère toutes les équipes
-     */
     @GetMapping
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
         List<TeamDTO> teams = teamService.getAllTeams();
         return ResponseEntity.ok(teams);
     }
 
-    /**
-     * GET /api/teams/{id} - Récupère une équipe par ID
-     */
     @GetMapping("/{id}")
     public ResponseEntity<TeamDTO> getTeamById(@PathVariable Long id) {
         return teamService.getTeamById(id)
@@ -37,9 +34,6 @@ public class TeamController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * GET /api/teams/name/{name} - Récupère une équipe par nom exact
-     */
     @GetMapping("/name/{name}")
     public ResponseEntity<TeamDTO> getTeamByName(@PathVariable String name) {
         return teamService.getTeamByName(name)
@@ -47,27 +41,18 @@ public class TeamController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * GET /api/teams/search?name={name} - Recherche des équipes par nom
-     */
     @GetMapping("/search")
     public ResponseEntity<List<TeamDTO>> searchTeamsByName(@RequestParam String name) {
         List<TeamDTO> teams = teamService.searchTeamsByName(name);
         return ResponseEntity.ok(teams);
     }
 
-    /**
-     * GET /api/teams/formation/{formationId} - Récupère les équipes par formation
-     */
     @GetMapping("/formation/{formationId}")
     public ResponseEntity<List<TeamDTO>> getTeamsByFormationId(@PathVariable Long formationId) {
         List<TeamDTO> teams = teamService.getTeamsByFormationId(formationId);
         return ResponseEntity.ok(teams);
     }
 
-    /**
-     * GET /api/teams/coach/{coachId} - Récupère l'équipe d'un entraîneur
-     */
     @GetMapping("/coach/{coachId}")
     public ResponseEntity<TeamDTO> getTeamByHeadCoachId(@PathVariable Long coachId) {
         return teamService.getTeamByHeadCoachId(coachId)
@@ -75,59 +60,114 @@ public class TeamController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * GET /api/teams/count - Compte le nombre d'équipes
-     */
     @GetMapping("/count")
     public ResponseEntity<Long> countTeams() {
         long count = teamService.countTeams();
         return ResponseEntity.ok(count);
     }
 
-    /**
-     * GET /api/teams/name-exists?name={name} - Vérifie si un nom d'équipe existe
-     */
     @GetMapping("/name-exists")
     public ResponseEntity<Boolean> teamNameExists(@RequestParam String name) {
         boolean exists = teamService.teamNameExists(name);
         return ResponseEntity.ok(exists);
     }
 
-    /**
-     * POST /api/teams - Crée une nouvelle équipe
-     */
     @PostMapping
-    public ResponseEntity<TeamDTO> createTeam(@Valid @RequestBody TeamDTO teamDTO) {
+    public ResponseEntity<?> createTeam(@Valid @RequestBody TeamDTO teamDTO) {
         try {
             TeamDTO createdTeam = teamService.createTeam(teamDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdTeam);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    /**
-     * PUT /api/teams/{id} - Met à jour une équipe existante
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<TeamDTO> updateTeam(
+    public ResponseEntity<?> updateTeam(
             @PathVariable Long id,
             @Valid @RequestBody TeamDTO teamDTO) {
         try {
             TeamDTO updatedTeam = teamService.updateTeam(id, teamDTO);
             return ResponseEntity.ok(updatedTeam);
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable Long id) {
+        try {
+            teamService.deleteTeam(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/{id}/design")
-    public ResponseEntity<TeamDTO> removeDesignFromTeam(@PathVariable Long id) {
+    // ========== ENDPOINTS POUR LE DESIGN DE L'ÉQUIPE ==========
+
+    /**
+     * GET /api/teams/{teamId}/design - Récupère le design d'une équipe
+     */
+    @GetMapping("/{teamId}/design")
+    public ResponseEntity<TeamDesignDTO> getTeamDesign(@PathVariable Long teamId) {
+        return teamDesignService.getDesignByTeamId(teamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * POST /api/teams/{teamId}/design - Crée un design pour une équipe
+     */
+    @PostMapping("/{teamId}/design")
+public ResponseEntity<?> createTeamDesign(
+        @PathVariable Long teamId,
+        @Valid @RequestBody TeamDesignDTO designDTO) {
+    try {
+        // Vérifier que l'équipe existe
+        if (teamService.getTeamById(teamId).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // ✅ AJOUT : Associer le teamId au DTO avant de créer le design
+        designDTO.setTeamId(teamId);
+        
+        TeamDesignDTO created = teamDesignService.createDesign(designDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+}
+
+    /**
+     * PUT /api/teams/{teamId}/design - Met à jour le design d'une équipe
+     */
+    @PutMapping("/{teamId}/design")
+    public ResponseEntity<?> updateTeamDesign(
+            @PathVariable Long teamId,
+            @Valid @RequestBody TeamDesignDTO designDTO) {
         try {
-            TeamDTO team = teamService.removeDesignFromTeam(id);
+            // Récupérer le design existant de l'équipe
+            TeamDesignDTO existingDesign = teamDesignService.getDesignByTeamId(teamId)
+                    .orElseThrow(() -> new IllegalArgumentException("Design non trouvé pour cette équipe"));
+            
+            TeamDesignDTO updated = teamDesignService.updateDesign(existingDesign.getId(), designDTO);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * DELETE /api/teams/{teamId}/design - Supprime le design d'une équipe
+     */
+    @DeleteMapping("/{teamId}/design")
+    public ResponseEntity<?> removeDesignFromTeam(@PathVariable Long teamId) {
+        try {
+            TeamDTO team = teamService.removeDesignFromTeam(teamId);
             return ResponseEntity.ok(team);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

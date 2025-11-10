@@ -133,4 +133,9 @@ public class TeamKitColorsEntity {
             }
         }
     }
+
+    public void setJerseyColorHex(Object jerseyColorHex) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setJerseyColorHex'");
+    }
 }

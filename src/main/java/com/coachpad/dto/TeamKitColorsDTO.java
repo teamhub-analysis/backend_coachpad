@@ -15,6 +15,7 @@ public class TeamKitColorsDTO {
     private String secondaryHex; // #RRGGBB ou null
     private String trimHex;      // #RRGGBB ou null
 
-    // Champ calculé pour l'UI
-    private boolean hasGoodContrast;
+    // Champ calculé - Ajoutez @Builder.Default pour que le builder le reconnaisse
+    @Builder.Default
+    private Boolean hasGoodContrast = null;
 }

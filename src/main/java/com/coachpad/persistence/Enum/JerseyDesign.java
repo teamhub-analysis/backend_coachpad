@@ -1,9 +1,5 @@
 package com.coachpad.persistence.Enum;
 
-import java.util.List;
-
-import com.coachpad.dto.TeamDesignDTO;
-
 import lombok.Getter;
 
 @Getter
@@ -44,8 +40,22 @@ public enum JerseyDesign {
         return this != SOLID && this != CUSTOM;
     }
 
-    public List<TeamDesignDTO> trim() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'trim'");
+    /**
+     * Retourne tous les designs disponibles sous forme de liste
+     */
+    public static java.util.List<JerseyDesign> getAllDesigns() {
+        return java.util.Arrays.asList(JerseyDesign.values());
+    }
+
+    /**
+     * Trouve un design par son nom d'affichage
+     */
+    public static JerseyDesign fromDisplayName(String displayName) {
+        for (JerseyDesign design : values()) {
+            if (design.displayName.equalsIgnoreCase(displayName)) {
+                return design;
+            }
+        }
+        throw new IllegalArgumentException("Aucun design trouvé pour : " + displayName);
     }
 }

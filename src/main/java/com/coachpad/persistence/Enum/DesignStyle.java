@@ -4,23 +4,38 @@ import lombok.Getter;
 
 @Getter
 public enum DesignStyle {
-    MODERN("Modern"),
-    CLASSIC("Classic"),
-    RETRO("Retro"),
-    MINIMALIST("Minimalist"),
-    VINTAGE("Vintage"),
-    FUTURISTIC("Futuristic");
+    MODERN("Modern", "Design moderne et épuré"),
+    CLASSIC("Classic", "Style classique intemporel"),
+    RETRO("Retro", "Inspiré des années passées"),
+    MINIMALIST("Minimalist", "Minimaliste et simple"),
+    VINTAGE("Vintage", "Style vintage authentique"),
+    FUTURISTIC("Futuristic", "Design futuriste et innovant");
 
     private final String displayName;
+    private final String description;
 
-    DesignStyle(String displayName) {
+    DesignStyle(String displayName, String description) {
         this.displayName = displayName;
+        this.description = description;
+    }
+
+
+    /**
+     * Retourne tous les styles disponibles sous forme de liste
+     */
+    public static java.util.List<DesignStyle> getAllStyles() {
+        return java.util.Arrays.asList(DesignStyle.values());
     }
 
     /**
-     * Retourne la clé i18n pour ce style
+     * Trouve un style par son nom d'affichage
      */
-    public String getI18nKey() {
-        return "design.style." + this.name();
+    public static DesignStyle fromDisplayName(String displayName) {
+        for (DesignStyle style : values()) {
+            if (style.displayName.equalsIgnoreCase(displayName)) {
+                return style;
+            }
+        }
+        throw new IllegalArgumentException("Aucun style trouvé pour : " + displayName);
     }
 }

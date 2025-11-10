@@ -12,7 +12,7 @@ import java.util.List;
 public class FormationDTO {
 
     private Long id;
-    private String name;
+   
     private List<FootballPosition> orderedPositions;
     private String formationFormat; 
     private boolean valid;

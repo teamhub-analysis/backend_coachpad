@@ -17,6 +17,8 @@ public class TeamDesignDTO {
 
     private Long id;
 
+    private Long teamId;
+
     @NotNull(message = "Le style ne peut pas être null")
     private DesignStyle style;
 
@@ -30,12 +32,6 @@ public class TeamDesignDTO {
     @NotNull(message = "Les couleurs ne peuvent pas être null")
     @Valid
     private TeamKitColorsDTO colors;
-
-    // Champs calculés
-    private Boolean hasCustomLogo;
-    private Boolean hasIconLogo;
-    private String fullLogoPath;
-    private Boolean isValid;
 
     /**
      * Constructeur pour la création (sans ID)
@@ -55,14 +51,26 @@ public class TeamDesignDTO {
     public boolean hasValidData() {
         return colors != null && 
                jerseyDesign != null && 
-               (hasCustomLogo() || hasIconLogo());
+               (getHasCustomLogo() || getHasIconLogo());
     }
 
-    private boolean hasCustomLogo() {
+    // Getters pour les propriétés calculées (pour MapStruct)
+    public Boolean getHasCustomLogo() {
         return logoFilePath != null && !logoFilePath.trim().isEmpty();
     }
 
-    private boolean hasIconLogo() {
+    public Boolean getHasIconLogo() {
         return logoIconName != null && !logoIconName.trim().isEmpty();
+    }
+
+    public String getFullLogoPath() {
+        if (logoFilePath != null && !logoFilePath.trim().isEmpty()) {
+            return logoFilePath;
+        }
+        return null;
+    }
+
+    public Boolean getIsValid() {
+        return hasValidData();
     }
 }

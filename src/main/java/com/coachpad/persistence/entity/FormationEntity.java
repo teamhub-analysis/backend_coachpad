@@ -22,8 +22,6 @@ public class FormationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -39,8 +37,6 @@ public class FormationEntity {
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TeamEntity> teams = new ArrayList<>();
-
-    // 🔹 Méthodes utilitaires simples
 
     public int getPositionCount() {
         return orderedPositions.size();
@@ -71,9 +67,6 @@ public class FormationEntity {
             .count();
     }
 
-    /**
-     * Retourne le format de la formation (ex: "4-4-2")
-     */
     public String getFormationFormat() {
         if (!isValid()) {
             return "Invalid";

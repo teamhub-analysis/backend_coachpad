@@ -5,14 +5,12 @@ import com.coachpad.model.CoachModel;
 import com.coachpad.persistence.entity.CoachEntity;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE) // ✅ ignore automatiquement les propriétés non mappées
 public interface CoachMapper {
 
-    // --- Entity ↔ Model ---
     CoachModel toModel(CoachEntity entity);
     CoachEntity toEntity(CoachModel model);
-
-    // --- Model ↔ DTO ---
-    CoachModel toDTO(CoachModel model);
+    CoachDTO toDTO(CoachModel model);
     CoachModel toModel(CoachDTO dto);
 }

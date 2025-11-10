@@ -13,38 +13,9 @@ import java.util.Optional;
 public interface FormationRepository extends JpaRepository<FormationEntity, Long> {
 
     /**
-     * Trouve une formation par nom exact
+     * Trouve toutes les formations
      */
-    Optional<FormationEntity> findByName(String name);
-
-    /**
-     * Vérifie si un nom de formation existe
-     */
-    boolean existsByName(String name);
-
-    /**
-     * Recherche des formations par nom (contient)
-     */
-    @Query("SELECT f FROM FormationEntity f WHERE LOWER(f.name) LIKE LOWER(CONCAT('%', :name, '%'))")
-    List<FormationEntity> searchByName(@Param("name") String name);
-
-    /**
-     * Trouve toutes les formations valides (11 joueurs avec 1 gardien)
-     */
-    @Query("SELECT f FROM FormationEntity f WHERE SIZE(f.orderedPositions) = 11")
-    List<FormationEntity> findValidFormations();
-
-    /**
-     * Trouve les formations les plus utilisées
-     */
-    @Query("SELECT f FROM FormationEntity f ORDER BY SIZE(f.teams) DESC")
-    List<FormationEntity> findMostUsedFormations();
-
-    /**
-     * Trouve les formations non utilisées
-     */
-    @Query("SELECT f FROM FormationEntity f WHERE SIZE(f.teams) = 0")
-    List<FormationEntity> findUnusedFormations();
+    List<FormationEntity> findAll();
 
     /**
      * Compte le nombre d'équipes utilisant une formation
@@ -57,10 +28,10 @@ public interface FormationRepository extends JpaRepository<FormationEntity, Long
      */
     @Query("SELECT DISTINCT f FROM FormationEntity f LEFT JOIN FETCH f.teams WHERE f.id = :id")
     Optional<FormationEntity> findByIdWithTeams(@Param("id") Long id);
-
+    
     /**
-     * Trouve toutes les formations avec leurs positions
+     * Trouve les formations non utilisées
      */
-    @Query("SELECT DISTINCT f FROM FormationEntity f LEFT JOIN FETCH f.orderedPositions")
-    List<FormationEntity> findAllWithPositions();
+    @Query("SELECT f FROM FormationEntity f WHERE SIZE(f.teams) = 0")
+    List<FormationEntity> findUnusedFormations();
 }

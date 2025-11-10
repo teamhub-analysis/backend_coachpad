@@ -124,4 +124,15 @@ public class PlayerServiceImpl implements PlayerService {
     public void deletePlayersByTeamId(Long teamId) {
         playerAdapter.deleteByTeamId(teamId);
     }
+      @Override
+    public PlayerDTO createPlayerForTeam(Long teamId, PlayerDTO playerDTO) {
+        // On délègue la logique à l'adaptateur
+        return playerAdapter.createForTeam(teamId, playerDTO);
+    }
+
+    @Override
+    public List<PlayerDTO> createPlayersForTeam(Long teamId, List<PlayerDTO> playerDTOs) {
+        // On délègue la logique à l'adaptateur
+        return playerAdapter.createBulkForTeam(teamId, playerDTOs);
+    }
 }

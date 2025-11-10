@@ -66,6 +66,11 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    public void deleteTeam(Long id) {
+        teamAdapter.delete(id);
+    }
+
+    @Override
     public TeamDTO removeDesignFromTeam(Long teamId) {
         return teamAdapter.removeDesign(teamId);
     }

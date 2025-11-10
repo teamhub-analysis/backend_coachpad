@@ -1,20 +1,18 @@
 // src/main/java/com/coachpad/persistence/adapter/TeamAdapter.java
 package com.coachpad.persistence.adapter;
 
-import com.coachpad.dto.TeamDTO;
-import com.coachpad.dto.TeamDesignDTO;
+import com.coachpad.dto.*;
+import com.coachpad.mapper.PlayerMapper;
 import com.coachpad.mapper.TeamDesignMapper;
 import com.coachpad.mapper.TeamMapper;
 import com.coachpad.persistence.entity.*;
 import com.coachpad.persistence.repository.*;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,9 +21,10 @@ public class TeamAdapter {
     private final TeamRepository teamRepository;
     private final FormationRepository formationRepository;
     private final CoachRepository coachRepository;
-    private final TeamDesignRepository teamDesignRepository;
+    private final PlayerRepository playerRepository;
     private final TeamMapper teamMapper;
     private final TeamDesignMapper designMapper;
+    private final PlayerMapper playerMapper; // INJECTÉ
 
     // ==================== READ OPERATIONS ====================
 
@@ -35,12 +34,12 @@ public class TeamAdapter {
     }
 
     @Transactional(readOnly = true)
-    public Optional<TeamDTO> findById(Long id) {
+    public java.util.Optional<TeamDTO> findById(Long id) {
         return teamRepository.findById(id).map(teamMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<TeamDTO> findByName(String name) {
+    public java.util.Optional<TeamDTO> findByName(String name) {
         return teamRepository.findByName(name).map(teamMapper::toDTO);
     }
 
@@ -55,7 +54,7 @@ public class TeamAdapter {
     }
 
     @Transactional(readOnly = true)
-    public Optional<TeamDTO> findByHeadCoachId(Long coachId) {
+    public java.util.Optional<TeamDTO> findByHeadCoachId(Long coachId) {
         return teamRepository.findByHeadCoachId(coachId).map(teamMapper::toDTO);
     }
 
@@ -71,27 +70,51 @@ public class TeamAdapter {
 
     // ==================== WRITE OPERATIONS ====================
 
+    /**
+     * CRÉE UNE ÉQUIPE COMPLÈTE EN 1 REQUÊTE
+     * - Équipe + Design + 11 joueurs (créés)
+     * - OU Équipe + playerIds (joueurs existants)
+     */
     @Transactional
     public TeamDTO create(TeamDTO dto) {
         validateUniqueName(null, dto.getName());
 
+        // 1. ÉQUIPE
         TeamEntity entity = teamMapper.toEntity(dto);
         entity.setFormation(fetchFormation(dto.getFormationId()));
         entity.setHeadCoach(fetchCoach(dto.getHeadCoachId()));
 
+        // 2. DESIGN
         if (dto.getDesign() != null) {
             TeamDesignEntity design = designMapper.toEntity(dto.getDesign());
             design.setTeam(entity);
             entity.setDesign(design);
         }
 
-        return teamMapper.toDTO(teamRepository.save(entity));
+        // 3. JOUEURS
+        if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
+            // → CRÉATION COMPLÈTE DES JOUEURS
+            List<PlayerEntity> players = dto.getPlayers().stream()
+                .map(playerMapper::toEntity)           // PlayerDTO → PlayerEntity
+                .peek(player -> player.setTeam(entity)) // LIAISON AUTOMATIQUE
+                .toList();
+            entity.setPlayers(players);
+        }
+        else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
+            // → JOUEURS DÉJÀ EXISTANTS
+            List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
+            entity.setPlayers(players);
+        }
+
+        // 4. SAUVEGARDE EN CASCADE
+        TeamEntity saved = teamRepository.save(entity);
+        return teamMapper.toDTO(saved);
     }
 
     @Transactional
     public TeamDTO update(Long id, TeamDTO dto) {
         TeamEntity entity = teamRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + id));
 
         validateUniqueName(id, dto.getName());
         teamMapper.updateEntityFromDTO(dto, entity);
@@ -99,6 +122,7 @@ public class TeamAdapter {
         entity.setFormation(fetchFormation(dto.getFormationId()));
         entity.setHeadCoach(fetchCoach(dto.getHeadCoachId()));
 
+        // DESIGN
         if (dto.getDesign() != null) {
             if (entity.getDesign() == null) {
                 TeamDesignEntity design = designMapper.toEntity(dto.getDesign());
@@ -111,13 +135,26 @@ public class TeamAdapter {
             entity.setDesign(null);
         }
 
+        // JOUEURS
+        entity.getPlayers().clear();
+        if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
+            List<PlayerEntity> players = dto.getPlayers().stream()
+                .map(playerMapper::toEntity)
+                .peek(p -> p.setTeam(entity))
+                .toList();
+            entity.getPlayers().addAll(players);
+        } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
+            List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
+            entity.getPlayers().addAll(players);
+        }
+
         return teamMapper.toDTO(teamRepository.save(entity));
     }
 
     @Transactional
-    public void delete(Long id) throws Exception {
+    public void delete(Long id) {
         if (!teamRepository.existsById(id)) {
-            throw new Exception("Team not found: " + id);
+            throw new EntityNotFoundException("Équipe non trouvée : " + id);
         }
         teamRepository.deleteById(id);
     }
@@ -125,7 +162,7 @@ public class TeamAdapter {
     @Transactional
     public TeamDTO addDesign(Long teamId, TeamDesignDTO designDTO) {
         TeamEntity team = teamRepository.findById(teamId)
-                .orElseThrow();
+                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + teamId));
 
         TeamDesignEntity design = designMapper.toEntity(designDTO);
         design.setTeam(team);
@@ -137,7 +174,7 @@ public class TeamAdapter {
     @Transactional
     public TeamDTO removeDesign(Long teamId) {
         TeamEntity team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + teamId));
 
         team.setDesign(null);
         return teamMapper.toDTO(teamRepository.save(team));
@@ -147,21 +184,30 @@ public class TeamAdapter {
 
     private void validateUniqueName(Long excludeId, String name) {
         if (teamRepository.existsByNameAndIdNot(name, excludeId)) {
-            throw new IllegalArgumentException("Team name already exists: " + name);
+            throw new IllegalArgumentException("Nom d'équipe déjà utilisé : " + name);
         }
     }
 
     private FormationEntity fetchFormation(Long id) {
-        return id != null
-                ? formationRepository.findById(id)
-                        .orElseThrow()
-                : null;
+        if (id == null) return null;
+        return formationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée : " + id));
     }
 
     private CoachEntity fetchCoach(Long id) {
-        return id != null
-                ? coachRepository.findById(id)
-                        .orElseThrow()
-                : null;
+        if (id == null) return null;
+        return coachRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Coach non trouvé : " + id));
+    }
+
+    private List<PlayerEntity> fetchPlayers(List<Long> ids) {
+        List<PlayerEntity> players = playerRepository.findAllById(ids);
+        if (players.size() != ids.size()) {
+            List<Long> missing = ids.stream()
+                    .filter(id -> players.stream().noneMatch(p -> p.getId().equals(id)))
+                    .toList();
+            throw new EntityNotFoundException("Joueurs non trouvés : " + missing);
+        }
+        return players;
     }
 }

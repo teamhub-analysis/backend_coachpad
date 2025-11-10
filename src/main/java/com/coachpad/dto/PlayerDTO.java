@@ -94,11 +94,7 @@ public class PlayerDTO {
     @Max(value = 100)
     private Integer passingRating;
 
-    @NotNull(message = "L'ID de l'équipe est obligatoire")
-    private Long teamId;
-
-    private String teamName;
-
+   
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 

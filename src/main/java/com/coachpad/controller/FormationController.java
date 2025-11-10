@@ -5,6 +5,7 @@ import com.coachpad.service.FormationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,10 +26,10 @@ public class FormationController {
     }
 
     @PostMapping
-    public FormationDTO createFormation(@RequestBody FormationDTO dto) {
-        return formationService.createFormation(dto);
+  public List<FormationDTO> createFormation(@RequestBody List<FormationDTO> dtos) {
+        // Le corps de la requête doit maintenant être un tableau JSON []
+        return formationService.createFormation(dtos);
     }
-
     @PutMapping("/{id}")
     public FormationDTO updateFormation(@PathVariable Long id, @RequestBody FormationDTO dto) {
         return formationService.updateFormation(id, dto);
@@ -38,4 +39,6 @@ public class FormationController {
     public void deleteFormation(@PathVariable Long id) {
         formationService.deleteFormation(id);
     }
+    // Dans FormationController.java
+
 }

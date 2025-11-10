@@ -1,8 +1,9 @@
-// src/main/java/com/coachpad/persistence/adapter/TeamDesignAdapter.java
 package com.coachpad.persistence.adapter;
 
 import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.mapper.TeamDesignMapper;
+import com.coachpad.persistence.Enum.DesignStyle;
+import com.coachpad.persistence.Enum.JerseyDesign;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import com.coachpad.persistence.repository.TeamDesignRepository;
 
@@ -28,15 +29,15 @@ public class TeamDesignAdapter {
     @Transactional(readOnly = true)
     public List<TeamDesignDTO> findAll() {
         log.debug("Récupération de tous les designs d'équipe");
-        return repository.findAll().stream()
+        return repository.findAllWithColors().stream()
                 .map(mapper::toDTO)
-                .toList(); // Java 16+
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public TeamDesignDTO findById(Long id) {
         log.debug("Récupération du design avec l'ID: {}", id);
-        TeamDesignEntity entity = repository.findById(id)
+        TeamDesignEntity entity = repository.findByIdWithColors(id)
                 .orElseThrow(() -> new EntityNotFoundException("Design not found: " + id));
         return mapper.toDTO(entity);
     }
@@ -49,17 +50,33 @@ public class TeamDesignAdapter {
     @Transactional(readOnly = true)
     public List<TeamDesignDTO> findByStyle(String style) {
         log.debug("Recherche des designs avec le style: {}", style);
-        return repository.findByStyle(style).stream()
-                .map(mapper::toDTO)
-                .toList();
+        try {
+            // Convertir String en Enum
+            DesignStyle designStyle = DesignStyle.valueOf(style.toUpperCase());
+            return repository.findByStyle(designStyle).stream()
+                    .map(mapper::toDTO)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            log.error("Style invalide: {}", style);
+            throw new ValidationException("Style invalide : " + style + 
+                ". Valeurs acceptées : " + getValidStyles());
+        }
     }
 
     @Transactional(readOnly = true)
     public List<TeamDesignDTO> findByJerseyDesign(String jerseyDesign) {
         log.debug("Recherche des designs avec le maillot: {}", jerseyDesign);
-        return repository.findByJerseyDesign(jerseyDesign).stream()
-                .map(mapper::toDTO)
-                .toList();
+        try {
+            // Convertir String en Enum
+            JerseyDesign jersey = JerseyDesign.valueOf(jerseyDesign.toUpperCase());
+            return repository.findByJerseyDesign(jersey).stream()
+                    .map(mapper::toDTO)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            log.error("Jersey design invalide: {}", jerseyDesign);
+            throw new ValidationException("Jersey design invalide : " + jerseyDesign + 
+                ". Valeurs acceptées : " + getValidJerseyDesigns());
+        }
     }
 
     // ==================== WRITE OPERATIONS ====================
@@ -70,6 +87,12 @@ public class TeamDesignAdapter {
         validateDesign(dto);
 
         TeamDesignEntity entity = mapper.toEntity(dto);
+        
+        // Lier les couleurs correctement
+        if (entity.getColors() != null) {
+            entity.getColors().setDesign(entity);
+        }
+        
         TeamDesignEntity saved = repository.save(entity);
 
         log.info("Design créé avec succès | ID: {}", saved.getId());
@@ -81,10 +104,16 @@ public class TeamDesignAdapter {
         log.debug("Mise à jour complète du design | ID: {}", id);
         validateDesign(dto);
 
-        TeamDesignEntity entity = repository.findById(id)
+        TeamDesignEntity entity = repository.findByIdWithColors(id)
                 .orElseThrow(() -> new EntityNotFoundException("Design not found: " + id));
 
         mapper.updateEntityFromDTO(dto, entity);
+        
+        // Gérer les couleurs
+        if (dto.getColors() != null && entity.getColors() != null) {
+            entity.getColors().setDesign(entity);
+        }
+        
         TeamDesignEntity updated = repository.save(entity);
 
         log.info("Design mis à jour avec succès | ID: {}", id);
@@ -95,7 +124,7 @@ public class TeamDesignAdapter {
     public TeamDesignDTO partialUpdate(Long id, TeamDesignDTO dto) {
         log.debug("Mise à jour partielle du design | ID: {}", id);
 
-        TeamDesignEntity entity = repository.findById(id)
+        TeamDesignEntity entity = repository.findByIdWithColors(id)
                 .orElseThrow(() -> new EntityNotFoundException("Design not found: " + id));
 
         // Mise à jour conditionnelle
@@ -111,15 +140,22 @@ public class TeamDesignAdapter {
         if (dto.getJerseyDesign() != null) {
             entity.setJerseyDesign(dto.getJerseyDesign());
         }
+     
+        
+        // Mise à jour des couleurs
         if (dto.getColors() != null) {
             if (entity.getColors() == null) {
-                entity.setColors(mapper.toEntity(dto).getColors());
+                TeamDesignEntity tempEntity = mapper.toEntity(dto);
+                entity.setColors(tempEntity.getColors());
+                if (entity.getColors() != null) {
+                    entity.getColors().setDesign(entity);
+                }
             } else {
-                // Utilise le mapper dédié aux couleurs
-                // (ou injecte TeamKitColorsMapper si besoin)
+                // Mise à jour des couleurs existantes
                 entity.getColors().setPrimaryHex(dto.getColors().getPrimaryHex());
                 entity.getColors().setSecondaryHex(dto.getColors().getSecondaryHex());
                 entity.getColors().setTrimHex(dto.getColors().getTrimHex());
+               
             }
         }
 
@@ -128,25 +164,65 @@ public class TeamDesignAdapter {
         return mapper.toDTO(updated);
     }
 
+    @Transactional
+    public void delete(Long id) {
+        log.debug("Suppression du design | ID: {}", id);
+        if (!repository.existsById(id)) {
+            throw new EntityNotFoundException("Design not found: " + id);
+        }
+        repository.deleteById(id);
+        log.info("Design supprimé avec succès | ID: {}", id);
+    }
+
     // ==================== VALIDATION ====================
 
     private void validateDesign(TeamDesignDTO dto) {
-    if (dto == null) {
-        throw new ValidationException("Le DTO du design ne peut pas être null");
-    }
-    if (dto.getColors() == null) {
-        throw new ValidationException("Les couleurs sont obligatoires");
-    }
-    if (dto.getJerseyDesign() == null) {
-        throw new ValidationException("Le design du maillot est obligatoire");
+        if (dto == null) {
+            throw new ValidationException("Le DTO du design ne peut pas être null");
+        }
+        if (dto.getColors() == null) {
+            throw new ValidationException("Les couleurs sont obligatoires");
+        }
+        if (dto.getJerseyDesign() == null) {
+            throw new ValidationException("Le design du maillot est obligatoire");
+        }
+
+        // Validation des couleurs pour les designs qui nécessitent plusieurs couleurs
+        if (dto.getJerseyDesign() != null && 
+            dto.getJerseyDesign().requiresMultipleColors()) {
+            if (dto.getColors().getSecondaryHex() == null || 
+                dto.getColors().getSecondaryHex().trim().isEmpty()) {
+                throw new ValidationException(
+                    "Le design " + dto.getJerseyDesign().getDisplayName() + 
+                    " nécessite au moins deux couleurs"
+                );
+            }
+        }
+
+        // Validation du logo
+        boolean hasLogo = (dto.getLogoFilePath() != null && !dto.getLogoFilePath().trim().isEmpty()) ||
+                          (dto.getLogoIconName() != null && !dto.getLogoIconName().trim().isEmpty());
+
+        if (!hasLogo) {
+            log.warn("Aucun logo fourni pour le design | Un logo par défaut sera utilisé");
+        }
     }
 
-    // trim() sécurisé sur les String seulement
-    boolean hasLogo = (dto.getLogoFilePath() != null && !dto.getLogoFilePath().trim().isEmpty()) ||
-                      (dto.getLogoIconName() != null && !dto.getLogoIconName().trim().isEmpty());
+    // ==================== MÉTHODES UTILITAIRES ====================
 
-    if (!hasLogo) {
-        log.warn("Aucun logo fourni pour le design | Un logo par défaut sera utilisé");
+    private String getValidStyles() {
+        return String.join(", ", 
+            java.util.Arrays.stream(DesignStyle.values())
+                .map(Enum::name)
+                .toArray(String[]::new)
+        );
     }
-}
+
+    private String getValidJerseyDesigns() {
+        return String.join(", ", 
+            java.util.Arrays.stream(JerseyDesign.values())
+                .map(Enum::name)
+                .toArray(String[]::new)
+        );
+    }
 }

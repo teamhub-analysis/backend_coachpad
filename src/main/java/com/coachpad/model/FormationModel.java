@@ -14,7 +14,7 @@ import java.util.List;
 public class FormationModel {
 
     private Long id;
-    private String name;
+ 
     private List<FootballPosition> orderedPositions;
     private String formationFormat;
     private boolean valid;
