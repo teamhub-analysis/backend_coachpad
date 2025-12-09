@@ -1,7 +1,7 @@
 package com.coachpad.persistence.repository;
 
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,13 +34,13 @@ public interface TeamDesignRepository extends JpaRepository<TeamDesignEntity, Lo
     // === RECHERCHES PAR STYLE (ENUM) ===
     
     @EntityGraph(attributePaths = {"colors"})
-    List<TeamDesignEntity> findByStyle(DesignStyle style);
+    List<TeamDesignEntity> findByStyle(WidgetAppearance style);
 
     @Query("SELECT DISTINCT d.style FROM TeamDesignEntity d WHERE d.style IS NOT NULL")
-    List<DesignStyle> findAllDistinctStyles();
+    List<WidgetAppearance> findAllDistinctStyles();
 
     @Query("SELECT COUNT(d) FROM TeamDesignEntity d WHERE d.style = :style")
-    long countByStyle(@Param("style") DesignStyle style);
+    long countByStyle(@Param("style") WidgetAppearance style);
 
     // === RECHERCHES PAR JERSEY DESIGN (ENUM) ===
     
@@ -62,7 +62,7 @@ public interface TeamDesignRepository extends JpaRepository<TeamDesignEntity, Lo
         AND d.jerseyDesign = :jerseyDesign
         """)
     List<TeamDesignEntity> findByStyleAndJerseyDesign(
-            @Param("style") DesignStyle style, 
+            @Param("style") WidgetAppearance style, 
             @Param("jerseyDesign") JerseyDesign jerseyDesign
     );
 

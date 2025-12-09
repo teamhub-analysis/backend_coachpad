@@ -1,9 +1,6 @@
 package com.coachpad.persistence.entity;
-
-
-
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,7 +22,7 @@ public class TeamDesignEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "style", length = 50)
-    private DesignStyle style;
+    private WidgetAppearance style;
 
     @Column(name = "logo_file_path")
     private String logoFilePath;
@@ -81,7 +78,7 @@ public class TeamDesignEntity {
     @PreUpdate
     private void validate() {
         if (style == null) {
-            style = DesignStyle.MODERN;
+            style = WidgetAppearance.CIRCLE;
         }
         
         if (jerseyDesign == null) {

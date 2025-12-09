@@ -2,8 +2,8 @@ package com.coachpad.persistence.adapter;
 
 import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.mapper.TeamDesignMapper;
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import com.coachpad.persistence.repository.TeamDesignRepository;
 
@@ -52,7 +52,7 @@ public class TeamDesignAdapter {
         log.debug("Recherche des designs avec le style: {}", style);
         try {
             // Convertir String en Enum
-            DesignStyle designStyle = DesignStyle.valueOf(style.toUpperCase());
+            WidgetAppearance designStyle = WidgetAppearance.valueOf(style.toUpperCase());
             return repository.findByStyle(designStyle).stream()
                     .map(mapper::toDTO)
                     .toList();
@@ -212,7 +212,7 @@ public class TeamDesignAdapter {
 
     private String getValidStyles() {
         return String.join(", ", 
-            java.util.Arrays.stream(DesignStyle.values())
+            java.util.Arrays.stream(WidgetAppearance.values())
                 .map(Enum::name)
                 .toArray(String[]::new)
         );

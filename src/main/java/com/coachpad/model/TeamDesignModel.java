@@ -1,7 +1,7 @@
 package com.coachpad.model;
 
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 
 import lombok.*;
 
@@ -21,7 +21,7 @@ public class TeamDesignModel {
     private Long id;
 
     /** Style visuel global (ex: MODERN, CLASSIC...) */
-    private DesignStyle style;
+    private WidgetAppearance style;
 
     /** Chemin du logo personnalisé (si présent) */
     private String logoFilePath;

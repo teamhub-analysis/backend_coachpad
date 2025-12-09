@@ -1,7 +1,7 @@
 package com.coachpad.dto;
 
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -20,7 +20,7 @@ public class TeamDesignDTO {
     private Long teamId;
 
     @NotNull(message = "Le style ne peut pas être null")
-    private DesignStyle style;
+    private WidgetAppearance style;
 
     private String logoFilePath;
 
@@ -36,7 +36,7 @@ public class TeamDesignDTO {
     /**
      * Constructeur pour la création (sans ID)
      */
-    public TeamDesignDTO(DesignStyle style, String logoFilePath, String logoIconName, 
+    public TeamDesignDTO(WidgetAppearance style, String logoFilePath, String logoIconName, 
                          JerseyDesign jerseyDesign, TeamKitColorsDTO colors) {
         this.style = style;
         this.logoFilePath = logoFilePath;

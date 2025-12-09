@@ -4,8 +4,8 @@ import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.dto.TeamKitColorsDTO;
 import com.coachpad.mapper.TeamDesignMapper;
 import com.coachpad.mapper.TeamKitColorsMapper;
-import com.coachpad.persistence.Enum.DesignStyle;
 import com.coachpad.persistence.Enum.JerseyDesign;
+import com.coachpad.persistence.Enum.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import com.coachpad.persistence.entity.TeamKitColorsEntity;
 import com.coachpad.persistence.repository.TeamDesignRepository;
@@ -55,7 +55,7 @@ public class TeamDesignServiceImpl implements TeamDesignService {
     public List<TeamDesignDTO> getDesignsByStyle(String style) {
         try {
             // Convertir String en Enum (insensible à la casse)
-            DesignStyle designStyle = DesignStyle.valueOf(style.toUpperCase());
+            WidgetAppearance designStyle = WidgetAppearance.valueOf(style.toUpperCase());
             return teamDesignRepository.findByStyle(designStyle)
                     .stream()
                     .map(teamDesignMapper::toDTO)
@@ -138,7 +138,7 @@ public class TeamDesignServiceImpl implements TeamDesignService {
     // === MÉTHODES UTILITAIRES PRIVÉES ===
 
     private List<String> getValidStyles() {
-        return java.util.Arrays.stream(DesignStyle.values())
+        return java.util.Arrays.stream(WidgetAppearance.values())
                 .map(Enum::name)
                 .collect(Collectors.toList());
     }
