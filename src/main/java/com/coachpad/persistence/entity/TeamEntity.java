@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"players", "headCoach", "design"})
+@ToString(exclude = { "players", "coaches", "design" })
 @EqualsAndHashCode(of = "id")
 public class TeamEntity {
 
@@ -34,9 +34,9 @@ public class TeamEntity {
     @JoinColumn(name = "formation_id")
     private FormationEntity formation;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_coach_id")
-    private CoachEntity headCoach;
+    @Builder.Default
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CoachEntity> coaches = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id")
@@ -64,6 +64,20 @@ public class TeamEntity {
         if (player != null) {
             players.remove(player);
             player.setTeam(null);
+        }
+    }
+
+    public void addCoach(CoachEntity coach) {
+        if (coach != null) {
+            coaches.add(coach);
+            coach.setTeam(this);
+        }
+    }
+
+    public void removeCoach(CoachEntity coach) {
+        if (coach != null) {
+            coaches.remove(coach);
+            coach.setTeam(null);
         }
     }
 

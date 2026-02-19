@@ -28,12 +28,13 @@ public class TeamDTO {
 
     private Long headCoachId;
     private String headCoachName;
+    private List<CoachDTO> coaches;
 
     private Long designId;
     private TeamDesignDTO design;
 
-    private List<Long> playerIds;      // Pour lier des joueurs existants
-    private List<PlayerDTO> players;   // ← AJOUTER CETTE LIGNE pour créer de nouveaux joueurs
+    private List<Long> playerIds; // Pour lier des joueurs existants
+    private List<PlayerDTO> players; // ← AJOUTER CETTE LIGNE pour créer de nouveaux joueurs
     private Integer playerCount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

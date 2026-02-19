@@ -24,9 +24,9 @@ public interface CoachRepository extends JpaRepository<CoachEntity, Long> {
      * Recherche des coachs par nom (prénom ou nom)
      */
     @Query("SELECT c FROM CoachEntity c WHERE " +
-           "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
-           "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
-           "LOWER(c.fullName) LIKE LOWER(CONCAT('%', :name, '%'))")
+            "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+            "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+            "LOWER(c.fullName) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<CoachEntity> searchByName(@Param("name") String name);
 
     /**
@@ -63,17 +63,17 @@ public interface CoachRepository extends JpaRepository<CoachEntity, Long> {
     List<CoachEntity> findCoachesWithTeam();
 
     /**
-     * Trouve un coach par son équipe
+     * Trouve les coachs par équipe
      */
     @Query("SELECT c FROM CoachEntity c WHERE c.team.id = :teamId")
-    Optional<CoachEntity> findByTeamId(@Param("teamId") Long teamId);
+    List<CoachEntity> findByTeamId(@Param("teamId") Long teamId);
 
     /**
      * Trouve les coachs dont le contrat expire bientôt (dans X jours)
      */
     @Query("SELECT c FROM CoachEntity c WHERE c.contractEndDate BETWEEN :today AND :deadline")
-    List<CoachEntity> findCoachesWithExpiringContract(@Param("today") LocalDate today, 
-                                                        @Param("deadline") LocalDate deadline);
+    List<CoachEntity> findCoachesWithExpiringContract(@Param("today") LocalDate today,
+            @Param("deadline") LocalDate deadline);
 
     /**
      * Trouve les coachs dont le contrat est expiré

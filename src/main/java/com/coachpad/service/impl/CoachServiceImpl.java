@@ -72,10 +72,11 @@ public class CoachServiceImpl implements CoachService {
     @Override
     public Optional<CoachModel> getCoachByTeamId(Long teamId) {
         Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
-        return teamOpt.map(team -> {
-            CoachEntity coach = team.getHeadCoach();
-            return coach != null ? toModel(coach) : null;
-        });
+        return teamOpt.flatMap(team -> team.getCoaches().stream()
+                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .findFirst()
+                .or(() -> team.getCoaches().stream().findFirst())
+                .map(this::toModel));
     }
 
     // --- Mapping ---
@@ -91,6 +92,7 @@ public class CoachServiceImpl implements CoachService {
                 .contractEndDate(coach.getContractEndDate())
                 .coachingPhilosophy(coach.getCoachingPhilosophy())
                 .coachingPhilosophyDescription(coach.getCoachingPhilosophyDescription())
+                .role(coach.getRole())
                 .build();
     }
 
@@ -106,6 +108,7 @@ public class CoachServiceImpl implements CoachService {
                 .contractEndDate(entity.getContractEndDate())
                 .coachingPhilosophy(entity.getCoachingPhilosophy())
                 .coachingPhilosophyDescription(entity.getCoachingPhilosophyDescription())
+                .role(entity.getRole())
                 .build();
     }
 }

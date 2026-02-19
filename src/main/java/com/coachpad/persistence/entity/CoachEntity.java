@@ -1,5 +1,6 @@
 package com.coachpad.persistence.entity;
 
+import com.coachpad.persistence.Enum.CoachRole;
 import com.coachpad.persistence.Enum.CoachingPhilosophy;
 import com.coachpad.persistence.Enum.LicenseLevel;
 import jakarta.persistence.*;
@@ -52,13 +53,19 @@ public class CoachEntity {
     @Column(name = "coaching_philosophy_description", columnDefinition = "TEXT")
     private String coachingPhilosophyDescription;
 
-    @OneToOne(mappedBy = "headCoach", fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 50)
+    private CoachRole role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
     private TeamEntity team;
 
     // --- Méthodes utilitaires ---
 
     public String getDisplayName() {
-        if (fullName != null && !fullName.trim().isEmpty()) return fullName.trim();
+        if (fullName != null && !fullName.trim().isEmpty())
+            return fullName.trim();
         String fn = (firstName != null) ? firstName.trim() : "";
         String ln = (lastName != null) ? lastName.trim() : "";
         return (fn + " " + ln).trim();
@@ -69,12 +76,14 @@ public class CoachEntity {
     }
 
     public boolean isContractValid() {
-        if (contractEndDate == null) return true;
+        if (contractEndDate == null)
+            return true;
         return !contractEndDate.isBefore(LocalDate.now());
     }
 
     public long getDaysRemainingOnContract() {
-        if (contractEndDate == null) return Long.MAX_VALUE;
+        if (contractEndDate == null)
+            return Long.MAX_VALUE;
         return ChronoUnit.DAYS.between(LocalDate.now(), contractEndDate);
     }
 
@@ -96,7 +105,8 @@ public class CoachEntity {
     }
 
     public String getExperienceLevel() {
-        if (licenseLevel == null) return "Débutant";
+        if (licenseLevel == null)
+            return "Débutant";
         return switch (licenseLevel) {
             case UEFA_PRO -> "Expert";
             case UEFA_A -> "Avancé";
@@ -115,9 +125,15 @@ public class CoachEntity {
             String ln = (lastName != null) ? lastName.trim() : "";
             fullName = (fn + " " + ln).trim();
         }
-        if (licenseLevel == null) licenseLevel = LicenseLevel.NONE;
-        if (coachingPhilosophy == null) coachingPhilosophy = CoachingPhilosophy.BALANCED;
-        if (firstName != null) firstName = firstName.trim();
-        if (lastName != null) lastName = lastName.trim();
+        if (licenseLevel == null)
+            licenseLevel = LicenseLevel.NONE;
+        if (coachingPhilosophy == null)
+            coachingPhilosophy = CoachingPhilosophy.BALANCED;
+        if (role == null)
+            role = CoachRole.HEAD_COACH;
+        if (firstName != null)
+            firstName = firstName.trim();
+        if (lastName != null)
+            lastName = lastName.trim();
     }
 }

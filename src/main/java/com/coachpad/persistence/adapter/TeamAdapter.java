@@ -82,7 +82,11 @@ public class TeamAdapter {
         // 1. ÉQUIPE
         TeamEntity entity = teamMapper.toEntity(dto);
         entity.setFormation(fetchFormation(dto.getFormationId()));
-        entity.setHeadCoach(fetchCoach(dto.getHeadCoachId()));
+        if (dto.getHeadCoachId() != null) {
+            CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
+            headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
+            entity.addCoach(headCoach);
+        }
 
         // 2. DESIGN
         if (dto.getDesign() != null) {
@@ -95,12 +99,11 @@ public class TeamAdapter {
         if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
             // → CRÉATION COMPLÈTE DES JOUEURS
             List<PlayerEntity> players = dto.getPlayers().stream()
-                .map(playerMapper::toEntity)           // PlayerDTO → PlayerEntity
-                .peek(player -> player.setTeam(entity)) // LIAISON AUTOMATIQUE
-                .toList();
+                    .map(playerMapper::toEntity) // PlayerDTO → PlayerEntity
+                    .peek(player -> player.setTeam(entity)) // LIAISON AUTOMATIQUE
+                    .toList();
             entity.setPlayers(players);
-        }
-        else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
+        } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
             // → JOUEURS DÉJÀ EXISTANTS
             List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
             entity.setPlayers(players);
@@ -120,7 +123,13 @@ public class TeamAdapter {
         teamMapper.updateEntityFromDTO(dto, entity);
 
         entity.setFormation(fetchFormation(dto.getFormationId()));
-        entity.setHeadCoach(fetchCoach(dto.getHeadCoachId()));
+        if (dto.getHeadCoachId() != null) {
+            CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
+            headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
+            // On s'assure qu'il n'est pas déjà dans la liste ou on remplace l'existant
+            entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
+            entity.addCoach(headCoach);
+        }
 
         // DESIGN
         if (dto.getDesign() != null) {
@@ -139,9 +148,9 @@ public class TeamAdapter {
         entity.getPlayers().clear();
         if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
             List<PlayerEntity> players = dto.getPlayers().stream()
-                .map(playerMapper::toEntity)
-                .peek(p -> p.setTeam(entity))
-                .toList();
+                    .map(playerMapper::toEntity)
+                    .peek(p -> p.setTeam(entity))
+                    .toList();
             entity.getPlayers().addAll(players);
         } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
             List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
@@ -189,13 +198,15 @@ public class TeamAdapter {
     }
 
     private FormationEntity fetchFormation(Long id) {
-        if (id == null) return null;
+        if (id == null)
+            return null;
         return formationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée : " + id));
     }
 
     private CoachEntity fetchCoach(Long id) {
-        if (id == null) return null;
+        if (id == null)
+            return null;
         return coachRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Coach non trouvé : " + id));
     }

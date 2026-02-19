@@ -1,5 +1,6 @@
 package com.coachpad.dto;
 
+import com.coachpad.persistence.Enum.CoachRole;
 import com.coachpad.persistence.Enum.CoachingPhilosophy;
 import com.coachpad.persistence.Enum.LicenseLevel;
 import lombok.*;
@@ -21,5 +22,6 @@ public class CoachDTO {
     private LocalDate contractEndDate;
     private CoachingPhilosophy coachingPhilosophy;
     private String coachingPhilosophyDescription;
+    private CoachRole role;
     private boolean assigned; // Calculé à partir de isAssigned()
 }

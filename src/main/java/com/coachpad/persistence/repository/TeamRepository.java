@@ -16,7 +16,9 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     // === RECHERCHES BASIQUES ===
     Optional<TeamEntity> findByName(String name);
+
     boolean existsByName(String name);
+
     Optional<TeamEntity> findByNickname(String nickname);
 
     @Query("SELECT t FROM TeamEntity t WHERE LOWER(t.name) LIKE LOWER(CONCAT('%', :name, '%'))")
@@ -24,11 +26,11 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     List<TeamEntity> findByFormationId(Long formationId);
 
-    @Query("SELECT t FROM TeamEntity t WHERE t.headCoach.id = :coachId")
+    @Query("SELECT t FROM TeamEntity t JOIN t.coaches c WHERE c.id = :coachId")
     Optional<TeamEntity> findByHeadCoachId(@Param("coachId") Long coachId);
 
     // === FILTRES MÉTIER ===
-    @Query("SELECT t FROM TeamEntity t WHERE t.headCoach IS NULL")
+    @Query("SELECT t FROM TeamEntity t WHERE NOT EXISTS (SELECT c FROM CoachEntity c WHERE c.team = t)")
     List<TeamEntity> findTeamsWithoutCoach();
 
     @Query("SELECT t FROM TeamEntity t WHERE SIZE(t.players) >= :minPlayers")
@@ -42,21 +44,21 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
     long countAllTeams();
 
     // === FETCH EAGER AVEC EntityGraph (recommandé) ===
-    @EntityGraph(attributePaths = {"players"})
+    @EntityGraph(attributePaths = { "players" })
     Optional<TeamEntity> findWithPlayersById(Long id);
 
-    @EntityGraph(attributePaths = {"headCoach"})
+    @EntityGraph(attributePaths = { "coaches" })
     Optional<TeamEntity> findWithCoachById(Long id);
 
-    @EntityGraph(attributePaths = {"design", "design.colors"})
+    @EntityGraph(attributePaths = { "design", "design.colors" })
     Optional<TeamEntity> findWithDesignById(Long id);
 
-    @EntityGraph(attributePaths = {"players", "headCoach", "design", "design.colors", "formation"})
+    @EntityGraph(attributePaths = { "players", "coaches", "design", "design.colors", "formation" })
     Optional<TeamEntity> findWithAllRelationsById(Long id);
 
     // CORRECTION ICI : Ajout de @Query
     @Query("SELECT t FROM TeamEntity t")
-    @EntityGraph(attributePaths = {"players"})
+    @EntityGraph(attributePaths = { "players" })
     List<TeamEntity> findAllWithPlayers();
 
     // === ORDRE CHRONOLOGIQUE ===
@@ -68,9 +70,9 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     // === MÉTHODE CRITIQUE : Unicité du nom (hors ID) ===
     @Query("""
-        SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END 
-        FROM TeamEntity t 
-        WHERE t.name = :name AND (:id IS NULL OR t.id <> :id)
-        """)
+            SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END
+            FROM TeamEntity t
+            WHERE t.name = :name AND (:id IS NULL OR t.id <> :id)
+            """)
     boolean existsByNameAndIdNot(@Param("name") String name, @Param("id") Long id);
 }
