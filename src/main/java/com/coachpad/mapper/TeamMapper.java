@@ -11,8 +11,8 @@ public interface TeamMapper {
 
     @Mapping(target = "formationId", source = "formation.id")
     @Mapping(target = "formationName", source = "formation.formationFormat")
-    @Mapping(target = "headCoachId", expression = "java(entity.getCoaches() != null ? entity.getCoaches().stream().filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH).findFirst().map(c -> c.getId()).orElse(entity.getCoaches().isEmpty() ? null : entity.getCoaches().get(0).getId()) : null)")
-    @Mapping(target = "headCoachName", expression = "java(entity.getCoaches() != null ? entity.getCoaches().stream().filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH).findFirst().map(c -> c.getFirstName() + \" \" + c.getLastName()).orElse(entity.getCoaches().isEmpty() ? null : entity.getCoaches().get(0).getFirstName() + \" \" + entity.getCoaches().get(0).getLastName()) : null)")
+    @Mapping(target = "headCoachId", expression = "java(mapHeadCoachId(entity))")
+    @Mapping(target = "headCoachName", expression = "java(mapHeadCoachName(entity))")
     @Mapping(target = "designId", source = "design.id")
     @Mapping(target = "design", qualifiedByName = "toDTO") // utilise TeamDesignMapper
     @Mapping(target = "playerIds", expression = "java(entity.getPlayers() != null ? entity.getPlayers().stream().map(p -> p.getId()).toList() : null)")
@@ -20,6 +20,28 @@ public interface TeamMapper {
     @Mapping(target = "coaches", source = "coaches")
     @Mapping(target = "playerCount", expression = "java(entity.getPlayers() != null ? entity.getPlayers().size() : 0)")
     TeamDTO toDTO(TeamEntity entity);
+
+    default Long mapHeadCoachId(TeamEntity entity) {
+        if (entity.getCoaches() == null || entity.getCoaches().isEmpty()) {
+            return null;
+        }
+        return entity.getCoaches().stream()
+                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .findFirst()
+                .map(com.coachpad.persistence.entity.CoachEntity::getId)
+                .orElse(entity.getCoaches().get(0).getId());
+    }
+
+    default String mapHeadCoachName(TeamEntity entity) {
+        if (entity.getCoaches() == null || entity.getCoaches().isEmpty()) {
+            return null;
+        }
+        return entity.getCoaches().stream()
+                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .findFirst()
+                .map(c -> c.getFirstName() + " " + c.getLastName())
+                .orElse(entity.getCoaches().get(0).getFirstName() + " " + entity.getCoaches().get(0).getLastName());
+    }
 
     List<TeamDTO> toDTOList(List<TeamEntity> entities);
 

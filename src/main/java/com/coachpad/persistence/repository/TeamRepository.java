@@ -53,13 +53,16 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
     @EntityGraph(attributePaths = { "design", "design.colors" })
     Optional<TeamEntity> findWithDesignById(Long id);
 
-    @EntityGraph(attributePaths = { "players", "coaches", "design", "design.colors", "formation" })
+    @EntityGraph(attributePaths = { "coaches", "design", "design.colors", "formation" })
     Optional<TeamEntity> findWithAllRelationsById(Long id);
 
-    // CORRECTION ICI : Ajout de @Query
     @Query("SELECT t FROM TeamEntity t")
     @EntityGraph(attributePaths = { "players" })
     List<TeamEntity> findAllWithPlayers();
+
+    @Query("SELECT t FROM TeamEntity t")
+    @EntityGraph(attributePaths = { "coaches" })
+    List<TeamEntity> findAllWithCoaches();
 
     // === ORDRE CHRONOLOGIQUE ===
     @Query("SELECT t FROM TeamEntity t ORDER BY t.createdAt DESC")

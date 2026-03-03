@@ -23,4 +23,5 @@ public class CoachModel {
     private CoachingPhilosophy coachingPhilosophy;
     private String coachingPhilosophyDescription;
     private CoachRole role;
+    private boolean assigned;
 }

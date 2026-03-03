@@ -30,12 +30,16 @@ public class TeamAdapter {
 
     @Transactional(readOnly = true)
     public List<TeamDTO> findAll() {
-        return teamMapper.toDTOList(teamRepository.findAll());
+        return teamMapper.toDTOList(teamRepository.findAllWithCoaches());
     }
 
     @Transactional(readOnly = true)
     public java.util.Optional<TeamDTO> findById(Long id) {
-        return teamRepository.findById(id).map(teamMapper::toDTO);
+        return teamRepository.findWithAllRelationsById(id).map(entity -> {
+            // S'assurer que les joueurs sont chargés si nécessaire par le mapper
+            entity.getPlayers().size();
+            return teamMapper.toDTO(entity);
+        });
     }
 
     @Transactional(readOnly = true)
@@ -123,13 +127,22 @@ public class TeamAdapter {
         teamMapper.updateEntityFromDTO(dto, entity);
 
         entity.setFormation(fetchFormation(dto.getFormationId()));
+
+        // Gérer l'entraîneur principal
         if (dto.getHeadCoachId() != null) {
             CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
             headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
-            // On s'assure qu'il n'est pas déjà dans la liste ou on remplace l'existant
+            entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH
+                    && !c.getId().equals(dto.getHeadCoachId()));
+            if (entity.getCoaches().stream().noneMatch(c -> c.getId().equals(dto.getHeadCoachId()))) {
+                entity.addCoach(headCoach);
+            }
+        } else {
             entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
-            entity.addCoach(headCoach);
         }
+
+        // Optionnel : Gérer les autres membres du staff si nécessaire
+        // Pour l'instant on garde la logique simple demandée par l'utilisateur
 
         // DESIGN
         if (dto.getDesign() != null) {

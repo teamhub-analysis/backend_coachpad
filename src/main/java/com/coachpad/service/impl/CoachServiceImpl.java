@@ -109,6 +109,7 @@ public class CoachServiceImpl implements CoachService {
                 .coachingPhilosophy(entity.getCoachingPhilosophy())
                 .coachingPhilosophyDescription(entity.getCoachingPhilosophyDescription())
                 .role(entity.getRole())
+                .assigned(entity.isAssigned())
                 .build();
     }
 }

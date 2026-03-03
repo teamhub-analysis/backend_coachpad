@@ -31,7 +31,7 @@ public class PlayerDTO {
     @Max(value = 99, message = "Le numéro ne peut pas dépasser 99")
     private Integer number;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS]]")
     @Past(message = "La date de naissance doit être dans le passé")
     private LocalDate dateOfBirth;
 
@@ -94,10 +94,9 @@ public class PlayerDTO {
     @Max(value = 100)
     private Integer passingRating;
 
-   
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS][Z]]")
     private LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS][Z]]")
     private LocalDateTime updatedAt;
 }

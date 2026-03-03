@@ -1,5 +1,7 @@
 package com.coachpad.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import com.coachpad.persistence.Enum.CoachRole;
 import com.coachpad.persistence.Enum.CoachingPhilosophy;
 import com.coachpad.persistence.Enum.LicenseLevel;
@@ -19,6 +21,7 @@ public class CoachDTO {
     private String nationality;
     private String photoUrl;
     private LicenseLevel licenseLevel;
+    @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS]]")
     private LocalDate contractEndDate;
     private CoachingPhilosophy coachingPhilosophy;
     private String coachingPhilosophyDescription;
