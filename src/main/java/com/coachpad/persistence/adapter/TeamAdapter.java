@@ -205,8 +205,13 @@ public class TeamAdapter {
     // ==================== PRIVATE UTILS ====================
 
     private void validateUniqueName(Long excludeId, String name) {
-        if (teamRepository.existsByNameAndIdNot(name, excludeId)) {
-            throw new IllegalArgumentException("Nom d'équipe déjà utilisé : " + name);
+        boolean exists = (excludeId == null)
+                ? teamRepository.existsByName(name)
+                : teamRepository.existsByNameAndIdNot(name, excludeId);
+
+        if (exists) {
+            // ✅ IllegalStateException → vrai 409
+            throw new IllegalStateException("Nom d'équipe déjà utilisé : " + name);
         }
     }
 

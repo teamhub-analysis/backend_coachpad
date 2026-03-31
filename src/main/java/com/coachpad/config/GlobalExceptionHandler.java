@@ -15,8 +15,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    // ✅ IllegalArgument → 400 Bad Request (pas 409 !)
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleConflict(IllegalArgumentException ex) {
+    public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    // ✅ Exception dédiée pour les vrais conflits
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleConflict(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 }
