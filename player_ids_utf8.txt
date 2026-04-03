@@ -1,0 +1,26 @@
+﻿jude-bellingham-player : 71310
+kylian-mbappe-2-player : 40670
+vinicius-junior-player : 53004
+federico-valverde-player : 42653
+eduardo-camavinga-player : 69367
+luka-modric-player : 880
+aurelien-tchouameni-player : 58145
+rodrygo-3-player : 67951
+guler-arda-player : 90609
+brahim-diaz-2-player : NOT FOUND
+endrick-player : NOT FOUND
+antonio-rudiger-player : 2330
+ferland-mendy-player : 54266
+andriy-lunin-player : 53635
+lucas-vazquez-player : NOT FOUND
+francisco-garcia-3-player : NOT FOUND
+jesus-vallejo-player : NOT FOUND
+ousmane-dembele-player : 39732
+bradley-barcola-player : 95034
+randal-kolo-muani-player : 50949
+vitinha-7-player : NOT FOUND
+warren-zaire-emery-player : 106915
+achraf-hakimi-player : 44920
+marquinhos-player : NOT FOUND
+gianluigi-donnarumma-player : 31875
+
