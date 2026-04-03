@@ -1,7 +1,8 @@
 package com.coachpad.mapper;
 
 import com.coachpad.dto.ProjectDTO;
-import com.coachpad.model.ProjectEntity;
+import com.coachpad.persistence.entity.ProjectEntity;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

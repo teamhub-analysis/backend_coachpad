@@ -29,6 +29,9 @@ public class TeamDesignModel {
     /** Nom de l'icône Flutter à utiliser comme logo (si aucun fichier n’est fourni) */
     private String logoIconName;
 
+    /** Si true, l'application utilise les photos réelles des joueurs au lieu des formes tactiques */
+    private boolean usePlayerPhotos;
+
     /** Type de design du maillot (ex: STRIPED, SOLID...) */
     private JerseyDesign jerseyDesign;
 

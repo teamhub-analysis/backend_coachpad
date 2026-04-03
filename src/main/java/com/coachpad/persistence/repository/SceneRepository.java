@@ -1,8 +1,9 @@
-package com.coachpad.persistence;
+package com.coachpad.persistence.repository;
 
-import com.coachpad.model.SceneEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.coachpad.model.SceneEntity;
 
 import java.util.List;
 

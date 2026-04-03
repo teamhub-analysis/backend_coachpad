@@ -11,6 +11,7 @@ public interface CoachMapper {
 
     CoachModel toModel(CoachEntity entity);
     CoachEntity toEntity(CoachModel model);
+    CoachEntity toEntity(CoachDTO dto); // ✅ AJOUT
     CoachDTO toDTO(CoachModel model);
     CoachModel toModel(CoachDTO dto);
 }

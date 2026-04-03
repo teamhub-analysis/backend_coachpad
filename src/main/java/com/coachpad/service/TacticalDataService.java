@@ -3,10 +3,11 @@ package com.coachpad.service;
 import com.coachpad.dto.ProjectContentDTO;
 import com.coachpad.dto.SceneDTO;
 import com.coachpad.mapper.SceneMapper;
-import com.coachpad.model.ProjectEntity;
 import com.coachpad.model.SceneEntity;
-import com.coachpad.persistence.ProjectRepository;
-import com.coachpad.persistence.SceneRepository;
+import com.coachpad.persistence.entity.ProjectEntity;
+import com.coachpad.persistence.repository.ProjectRepository;
+import com.coachpad.persistence.repository.SceneRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,8 @@ public class TacticalDataService {
     @Transactional
     public void saveProjectContent(ProjectContentDTO content) {
         Optional<ProjectEntity> projectOpt = projectRepository.findById(content.getProjectId());
-        if (projectOpt.isEmpty()) return;
+        if (projectOpt.isEmpty())
+            return;
 
         ProjectEntity project = projectOpt.get();
 
@@ -70,7 +72,7 @@ public class TacticalDataService {
         project.setAwayTeamName(content.getAwayTeamName());
         project.setExerciseIds(content.getExerciseIds());
         project.setSessionIds(content.getSessionIds());
-        
+
         // Mise à jour des compteurs statistiques
         project.setSceneCount(content.getScenes().size());
         project.setModificationCount(project.getModificationCount() + 1);
@@ -78,7 +80,8 @@ public class TacticalDataService {
         projectRepository.save(project);
 
         // 2. Synchronisation des scènes (Suppression puis insertion pour simplicité)
-        // Note: Dans une application massive, on ferait un diff, mais ici le pack complet est envoyé.
+        // Note: Dans une application massive, on ferait un diff, mais ici le pack
+        // complet est envoyé.
         sceneRepository.deleteByProjectId(content.getProjectId());
 
         List<SceneEntity> sceneEntities = content.getScenes().stream()

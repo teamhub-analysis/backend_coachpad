@@ -16,6 +16,7 @@ public class PlayerModel {
     private Integer number;
     private LocalDate dateOfBirth;
     private String nationality;
+    private String category;
   
     private String photoUrl;
     private Double heightCm;

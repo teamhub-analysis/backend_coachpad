@@ -170,4 +170,23 @@ public ResponseEntity<?> createTeamDesign(
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    // ========== IMPORT EXCEL ==========
+    private final com.coachpad.service.ExcelImportService excelImportService;
+
+    /**
+     * POST /api/teams/import - Importe une équipe depuis un fichier Excel
+     */
+    @PostMapping("/import")
+    public ResponseEntity<?> importTeam(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            TeamDTO importedTeam = excelImportService.parseTeamExcel(file);
+            // On peut soit retourner le DTO pour modification manuelle, soit le sauvegarder directement
+            // Ici, on le sauvegarde directement pour l'utilisateur
+            TeamDTO created = teamService.createTeam(importedTeam);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur lors de l'import : " + e.getMessage());
+        }
+    }
 }

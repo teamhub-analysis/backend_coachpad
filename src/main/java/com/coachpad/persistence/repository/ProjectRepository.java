@@ -1,7 +1,8 @@
-package com.coachpad.persistence;
+package com.coachpad.persistence.repository;
 
-import com.coachpad.model.ProjectEntity;
 import com.coachpad.model.enums.ProjectCategory;
+import com.coachpad.persistence.entity.ProjectEntity;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

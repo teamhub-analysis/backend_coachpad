@@ -3,8 +3,8 @@ package com.coachpad.controller;
 import com.coachpad.dto.ProjectContentDTO;
 import com.coachpad.dto.ProjectDTO;
 import com.coachpad.mapper.ProjectMapper;
-import com.coachpad.model.ProjectEntity;
 import com.coachpad.model.enums.ProjectCategory;
+import com.coachpad.persistence.entity.ProjectEntity;
 import com.coachpad.service.ProjectService;
 import com.coachpad.service.TacticalDataService;
 

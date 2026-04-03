@@ -5,6 +5,7 @@ import com.coachpad.dto.*;
 import com.coachpad.mapper.PlayerMapper;
 import com.coachpad.mapper.TeamDesignMapper;
 import com.coachpad.mapper.TeamMapper;
+import com.coachpad.mapper.SquadGroupMapper;
 import com.coachpad.persistence.entity.*;
 import com.coachpad.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,7 +25,8 @@ public class TeamAdapter {
     private final PlayerRepository playerRepository;
     private final TeamMapper teamMapper;
     private final TeamDesignMapper designMapper;
-    private final PlayerMapper playerMapper; // INJECTÉ
+    private final PlayerMapper playerMapper;
+    private final SquadGroupMapper squadGroupMapper;
 
     // ==================== READ OPERATIONS ====================
 
@@ -113,7 +115,22 @@ public class TeamAdapter {
             entity.setPlayers(players);
         }
 
-        // 4. SAUVEGARDE EN CASCADE
+        // 5. SQUAD GROUPS
+        if (dto.getGroups() != null && !dto.getGroups().isEmpty()) {
+            List<SquadGroupEntity> groups = dto.getGroups().stream()
+                    .map(groupDto -> {
+                        SquadGroupEntity group = squadGroupMapper.toEntity(groupDto);
+                        group.setTeam(entity);
+                        if (groupDto.getPlayerIds() != null) {
+                            group.setPlayers(fetchPlayers(groupDto.getPlayerIds()));
+                        }
+                        return group;
+                    })
+                    .toList();
+            entity.setGroups(groups);
+        }
+
+        // 6. SAUVEGARDE EN CASCADE
         TeamEntity saved = teamRepository.save(entity);
         return teamMapper.toDTO(saved);
     }
@@ -168,6 +185,22 @@ public class TeamAdapter {
         } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
             List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
             entity.getPlayers().addAll(players);
+        }
+
+        // SQUAD GROUPS Update
+        entity.getGroups().clear();
+        if (dto.getGroups() != null && !dto.getGroups().isEmpty()) {
+            List<SquadGroupEntity> groups = dto.getGroups().stream()
+                    .map(groupDto -> {
+                        SquadGroupEntity group = squadGroupMapper.toEntity(groupDto);
+                        group.setTeam(entity);
+                        if (groupDto.getPlayerIds() != null) {
+                            group.setPlayers(fetchPlayers(groupDto.getPlayerIds()));
+                        }
+                        return group;
+                    })
+                    .toList();
+            entity.getGroups().addAll(groups);
         }
 
         return teamMapper.toDTO(teamRepository.save(entity));

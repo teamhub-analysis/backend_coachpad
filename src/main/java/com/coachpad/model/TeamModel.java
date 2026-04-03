@@ -14,9 +14,12 @@ public class TeamModel {
     private String name;
     private String nickname;
     private FormationModel formation;
+    private String ageCategory;
     private List<CoachModel> coaches;
+    private List<CoachModel> medicalStaff;
     private TeamDesignModel design;
     private List<PlayerModel> players;
+    private List<SquadGroupModel> groups;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

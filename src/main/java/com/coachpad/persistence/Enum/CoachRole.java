@@ -8,7 +8,11 @@ public enum CoachRole {
     ASSISTANT_COACH("Entraîneur Adjoint"),
     GOALKEEPER_COACH("Entraîneur des Gardiens"),
     FITNESS_COACH("Préparateur Physique"),
-    ANALYST("Analyste Vidéo");
+    ANALYST("Analyste Vidéo"),
+    DOCTOR("Médecin"),
+    PHYSIOTHERAPIST("Kinésithérapeute"),
+    MASSEUR("Masseur"),
+    NUTRITIONIST("Nutritionniste");
 
     private final String displayName;
 

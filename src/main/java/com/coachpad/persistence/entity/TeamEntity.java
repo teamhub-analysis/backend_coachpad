@@ -34,9 +34,20 @@ public class TeamEntity {
     @JoinColumn(name = "formation_id")
     private FormationEntity formation;
 
+    @Column(name = "age_category", length = 50)
+    private String ageCategory;
+
     @Builder.Default
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CoachEntity> coaches = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+        name = "team_medical_staff",
+        joinColumns = @JoinColumn(name = "team_id"),
+        inverseJoinColumns = @JoinColumn(name = "coach_id")
+    )
+    private List<CoachEntity> medicalStaff = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id")
@@ -45,6 +56,10 @@ public class TeamEntity {
     @Builder.Default
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayerEntity> players = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SquadGroupEntity> groups = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

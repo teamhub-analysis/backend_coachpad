@@ -1,5 +1,6 @@
-package com.coachpad.model;
+package com.coachpad.persistence.entity;
 
+import com.coachpad.model.SceneEntity;
 import com.coachpad.model.enums.ProjectCategory;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,8 +17,10 @@ import java.util.List;
  */
 @Entity
 @Table(name = "projects")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ProjectEntity {
 
@@ -96,7 +99,7 @@ public class ProjectEntity {
     private LocalDateTime lastModified;
 
     // --- Relations Optionnelles ---
-    
+
     // Un projet peut avoir plusieurs IDs d'exercices liés (Session -> Exercises)
     @ElementCollection
     @CollectionTable(name = "project_exercise_links", joinColumns = @JoinColumn(name = "project_id"))

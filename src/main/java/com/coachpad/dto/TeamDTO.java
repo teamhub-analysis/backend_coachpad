@@ -28,7 +28,9 @@ public class TeamDTO {
 
     private Long headCoachId;
     private String headCoachName;
+    private String ageCategory;
     private List<CoachDTO> coaches;
+    private List<CoachDTO> medicalStaff;
 
     private Long designId;
     private TeamDesignDTO design;
@@ -36,6 +38,7 @@ public class TeamDTO {
     private List<Long> playerIds; // Pour lier des joueurs existants
     private List<PlayerDTO> players; // ← AJOUTER CETTE LIGNE pour créer de nouveaux joueurs
     private Integer playerCount;
+    private List<SquadGroupDTO> groups;
 
     @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS][Z]]")
     private LocalDateTime createdAt;

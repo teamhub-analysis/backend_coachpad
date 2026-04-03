@@ -1,8 +1,9 @@
 package com.coachpad.service;
 
-import com.coachpad.model.ProjectEntity;
 import com.coachpad.model.enums.ProjectCategory;
-import com.coachpad.persistence.ProjectRepository;
+import com.coachpad.persistence.entity.ProjectEntity;
+import com.coachpad.persistence.repository.ProjectRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +50,8 @@ public class ProjectService {
     @Transactional
     public boolean linkProjects(String parentId, List<String> childIds, ProjectCategory childCategory) {
         Optional<ProjectEntity> parentOpt = projectRepository.findById(parentId);
-        if (parentOpt.isEmpty()) return false;
+        if (parentOpt.isEmpty())
+            return false;
 
         ProjectEntity parent = parentOpt.get();
 

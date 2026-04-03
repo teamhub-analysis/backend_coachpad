@@ -6,7 +6,7 @@ import org.mapstruct.*;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = { PlayerMapper.class,
-        TeamDesignMapper.class }, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+        TeamDesignMapper.class, CoachMapper.class, SquadGroupMapper.class }, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
 
     @Mapping(target = "formationId", source = "formation.id")
@@ -19,6 +19,7 @@ public interface TeamMapper {
     @Mapping(target = "players", source = "players")
     @Mapping(target = "coaches", source = "coaches")
     @Mapping(target = "playerCount", expression = "java(entity.getPlayers() != null ? entity.getPlayers().size() : 0)")
+    @Mapping(target = "groups", source = "groups")
     TeamDTO toDTO(TeamEntity entity);
 
     default Long mapHeadCoachId(TeamEntity entity) {
@@ -52,7 +53,9 @@ public interface TeamMapper {
     @Mapping(target = "formation", expression = "java(dto.getFormationId() != null ? FormationEntity.builder().id(dto.getFormationId()).build() : null)")
     @Mapping(target = "coaches", ignore = true)
     @Mapping(target = "design", source = "design")
-    @Mapping(target = "players", ignore = true)
+    @Mapping(target = "players", source = "players")
+    @Mapping(target = "medicalStaff", source = "medicalStaff")
+    @Mapping(target = "groups", source = "groups")
     TeamEntity toEntity(TeamDTO dto);
 
     List<TeamEntity> toEntityList(List<TeamDTO> dtos);
@@ -65,7 +68,9 @@ public interface TeamMapper {
     @Mapping(target = "formation", ignore = true)
     @Mapping(target = "coaches", ignore = true)
     @Mapping(target = "design", ignore = true)
-    @Mapping(target = "players", ignore = true)
+    @Mapping(target = "players", source = "players")
+    @Mapping(target = "medicalStaff", source = "medicalStaff")
+    @Mapping(target = "groups", source = "groups")
     void updateEntityFromDTO(TeamDTO dto, @MappingTarget TeamEntity entity);
 
 }

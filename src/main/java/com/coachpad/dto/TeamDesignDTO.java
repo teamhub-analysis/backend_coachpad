@@ -26,6 +26,8 @@ public class TeamDesignDTO {
 
     private String logoIconName;
 
+    private Boolean usePlayerPhotos;
+
     @NotNull(message = "Le design du maillot ne peut pas être null")
     private JerseyDesign jerseyDesign;
 

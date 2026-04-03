@@ -30,6 +30,9 @@ public class TeamDesignEntity {
     @Column(name = "logo_icon_name", length = 100)
     private String logoIconName;
 
+    @Column(name = "use_player_photos")
+    private Boolean usePlayerPhotos = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "jersey_design", length = 50)
     private JerseyDesign jerseyDesign;
@@ -87,6 +90,10 @@ public class TeamDesignEntity {
         
         if (!hasCustomLogo() && !hasIconLogo()) {
             logoIconName = "sports_soccer";
+        }
+        
+        if (usePlayerPhotos == null) {
+            usePlayerPhotos = false;
         }
     }
 }

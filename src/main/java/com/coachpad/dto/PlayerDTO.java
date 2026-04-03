@@ -40,6 +40,8 @@ public class PlayerDTO {
     @Size(max = 50, message = "La nationalité ne doit pas dépasser 50 caractères")
     private String nationality;
 
+    private String category;
+
     @Email(message = "Format email invalide")
     @Size(max = 100, message = "L'email ne doit pas dépasser 100 caractères")
     private String email;
