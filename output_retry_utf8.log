@@ -1,0 +1,100 @@
+﻿    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        team_designs
+        (colors_id, jersey_design, logo_file_path, logo_icon_name, style, use_player_photos) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        teams
+        (age_category, created_at, design_id, formation_id, name, nickname, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        coaches
+        (coaching_philosophy, coaching_philosophy_description, contract_end_date, first_name, full_name, last_name, license_level, nationality, photo_url, role, team_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        players
+        (created_at, current_rating, date_of_birth, email, first_name, full_name, height_cm, last_name, main_position, matches_played, nationality, number, passing_rating, phone_number, photo_url, preferred_foot, shooting_rating, speed_rating, stamina_rating, status, team_id, total_assists, total_goals, updated_at, weight_kg) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        players
+        (created_at, current_rating, date_of_birth, email, first_name, full_name, height_cm, last_name, main_position, matches_played, nationality, number, passing_rating, phone_number, photo_url, preferred_foot, shooting_rating, speed_rating, stamina_rating, status, team_id, total_assists, total_goals, updated_at, weight_kg) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        team_colors
+        (primary_hex, secondary_hex, trim_hex) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        team_designs
+        (colors_id, jersey_design, logo_file_path, logo_icon_name, style, use_player_photos) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        teams
+        (age_category, created_at, design_id, formation_id, name, nickname, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        coaches
+        (coaching_philosophy, coaching_philosophy_description, contract_end_date, first_name, full_name, last_name, license_level, nationality, photo_url, role, team_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        players
+        (created_at, current_rating, date_of_birth, email, first_name, full_name, height_cm, last_name, main_position, matches_played, nationality, number, passing_rating, phone_number, photo_url, preferred_foot, shooting_rating, speed_rating, stamina_rating, status, team_id, total_assists, total_goals, updated_at, weight_kg) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)

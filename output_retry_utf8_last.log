@@ -1,0 +1,20 @@
+﻿    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        team_medical_staff
+        (team_id, coach_id) 
+    values
+        (?, ?)
