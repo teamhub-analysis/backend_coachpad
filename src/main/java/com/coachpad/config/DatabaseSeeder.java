@@ -193,12 +193,16 @@ public class DatabaseSeeder {
     }
 
     private PlayerEntity createPlayer(String fn, String ln, int num, String pos, String nat, String dob, String photo) {
-        // Fallback for missing last name to pass @NotBlank validation
+        // Fallback for missing last name and position to pass @NotBlank validation
         String finalLn = (ln == null || ln.isBlank()) ? fn : ln;
+        String finalPos = (pos == null || pos.isBlank()) ? "TBD" : pos;
+        int finalNum = (num < 1) ? 99 : num;
+
         return PlayerEntity.builder()
-                .firstName(fn).lastName(finalLn).fullName((fn + " " + ln).trim())
-                .number(num).mainPosition(pos).nationality(nat)
-                .dateOfBirth(dob.isEmpty() ? null : LocalDate.parse(dob))
+                .firstName(fn).lastName(finalLn)
+                .fullName((fn + " " + (ln != null ? ln : "")).trim())
+                .number(finalNum).mainPosition(finalPos).nationality(nat)
+                .dateOfBirth((dob == null || dob.isEmpty()) ? null : LocalDate.parse(dob))
                 .photoUrl(photo).build();
     }
 }

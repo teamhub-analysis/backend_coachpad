@@ -19,34 +19,73 @@ public class ExcelImportService {
     public TeamDTO parseTeamExcel(MultipartFile file) throws IOException {
         List<PlayerDTO> players = new ArrayList<>();
         String teamName = "Nouvelle Équipe";
+        java.util.Set<Integer> usedNumbers = new java.util.HashSet<>();
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rows = sheet.iterator();
-
-            // Sauter l'en-tête si nécessaire
-            if (rows.hasNext()) {
-                rows.next();
+            
+            // On peut aussi essayer de deviner le nom de l'équipe à partir du nom du fichier
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null && !originalFilename.isEmpty()) {
+                teamName = originalFilename.replace(".xlsx", "").replace(".xls", "");
             }
+
+            // On va stocker les joueurs temporairement pour gérer les numéros en deux temps
+            List<PlayerDTO> tempPlayers = new ArrayList<>();
+            Iterator<Row> rows = sheet.iterator();
+            if (rows.hasNext()) rows.next(); // Sauter l'en-tête
 
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
-                
-                // Vérifier si la ligne est vide
                 if (isRowEmpty(currentRow)) continue;
 
+                String firstName = getCellValueAsString(currentRow.getCell(0));
+                if (firstName == null || firstName.isBlank()) continue;
+
+                String lastName = getCellValueAsString(currentRow.getCell(1));
+                if (lastName == null || lastName.isBlank()) lastName = firstName;
+
+                Integer number = getCellValueAsInt(currentRow.getCell(2));
+                String mainPosition = getCellValueAsString(currentRow.getCell(3));
+                if (mainPosition == null || mainPosition.isBlank()) mainPosition = "TBD";
+
                 PlayerDTO player = PlayerDTO.builder()
-                        .firstName(getCellValueAsString(currentRow.getCell(0)))
-                        .lastName(getCellValueAsString(currentRow.getCell(1)))
-                        .number(getCellValueAsInt(currentRow.getCell(2)))
-                        .mainPosition(getCellValueAsString(currentRow.getCell(3)))
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .number(number)
+                        .mainPosition(mainPosition)
                         .category(getCellValueAsString(currentRow.getCell(4)))
                         .nationality(getCellValueAsString(currentRow.getCell(5)))
                         .build();
                 
-                if (player.getFirstName() != null && !player.getFirstName().isEmpty()) {
-                    players.add(player);
+                tempPlayers.add(player);
+                if (number != null && number >= 1 && number <= 99) {
+                    usedNumbers.add(number);
                 }
+            }
+
+            // Deuxième passage : Attribuer des numéros uniques à ceux qui n'en ont pas ou ont des doublons
+            java.util.Set<Integer> finalNumbers = new java.util.HashSet<>();
+            int nextAvailable = 1;
+            for (PlayerDTO p : tempPlayers) {
+                Integer num = p.getNumber();
+                // Si le numéro est absent, hors limites, ou déjà utilisé par un autre joueur dans ce même import
+                if (num == null || num < 1 || num > 99 || finalNumbers.contains(num)) {
+                    while ((usedNumbers.contains(nextAvailable) || finalNumbers.contains(nextAvailable)) && nextAvailable < 99) {
+                        nextAvailable++;
+                    }
+                    
+                    // Vérification finale pour éviter les doublons si on a atteint 99
+                    if (finalNumbers.contains(nextAvailable) || usedNumbers.contains(nextAvailable)) {
+                        throw new IllegalStateException("Plus de numéros disponibles pour cette équipe (limite de 1 à 99 atteinte).");
+                    }
+                    
+                    p.setNumber(nextAvailable);
+                    finalNumbers.add(nextAvailable);
+                } else {
+                    finalNumbers.add(num);
+                }
+                players.add(p);
             }
         }
 
