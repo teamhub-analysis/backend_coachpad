@@ -8,17 +8,30 @@ import com.coachpad.persistence.Enum.JerseyDesign;
 import com.coachpad.persistence.Enum.WidgetAppearance;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 public class ExcelImportService {
 
+    @Value("${coachpad.upload.dir}")
+    private String uploadDir;
+
     public TeamDTO parseTeamExcel(MultipartFile file) throws IOException {
+        // --- SAUVEGARDE PHYSIQUE DU FICHIER ---
+        saveFileToDisk(file);
+
         List<PlayerDTO> players = new ArrayList<>();
         String teamName = "Nouvelle Équipe";
         java.util.Set<Integer> usedNumbers = new java.util.HashSet<>();
@@ -185,5 +198,28 @@ public class ExcelImportService {
             }
         }
         return true;
+    }
+
+    private void saveFileToDisk(MultipartFile file) {
+        try {
+            // 1. Créer le dossier s'il n'existe pas
+            Path root = Paths.get(uploadDir);
+            if (!Files.exists(root)) {
+                Files.createDirectories(root);
+            }
+
+            // 2. Générer un nom unique : yyyyMMdd_HHmmss_nomorigine.xlsx
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String originalFilename = file.getOriginalFilename();
+            String fileName = timestamp + "_" + (originalFilename != null ? originalFilename : "import.xlsx");
+
+            // 3. Copier le fichier
+            Files.copy(file.getInputStream(), root.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            
+            System.out.println("Fichier Excel sauvegardé sous : " + root.resolve(fileName));
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la sauvegarde du fichier Excel : " + e.getMessage());
+            // On ne bloque pas l'import pour autant
+        }
     }
 }
