@@ -2,6 +2,7 @@
 package com.coachpad.persistence.adapter;
 
 import com.coachpad.dto.*;
+import com.coachpad.mapper.CoachMapper;
 import com.coachpad.mapper.PlayerMapper;
 import com.coachpad.mapper.TeamDesignMapper;
 import com.coachpad.mapper.TeamMapper;
@@ -27,6 +28,8 @@ public class TeamAdapter {
     private final TeamDesignMapper designMapper;
     private final PlayerMapper playerMapper;
     private final SquadGroupMapper squadGroupMapper;
+    private final CoachMapper coachMapper;
+
 
     // ==================== READ OPERATIONS ====================
 
@@ -143,10 +146,27 @@ public class TeamAdapter {
         validateUniqueName(id, dto.getName());
         teamMapper.updateEntityFromDTO(dto, entity);
 
-        entity.setFormation(fetchFormation(dto.getFormationId()));
+        if (dto.getFormationId() != null) {
+            entity.setFormation(fetchFormation(dto.getFormationId()));
+        }
 
-        // Gérer l'entraîneur principal
-        if (dto.getHeadCoachId() != null) {
+        // --- GESTION DU STAFF (COACHES) ---
+        if (dto.getCoaches() != null) {
+            // Mise à jour de la liste des coaches si fournie
+            entity.getCoaches().clear();
+            for (CoachDTO coachDto : dto.getCoaches()) {
+                CoachEntity coach;
+                if (coachDto.getId() != null && coachDto.getId() > 0) {
+                    coach = coachRepository.findById(coachDto.getId())
+                            .orElseGet(() -> coachMapper.toEntity(coachDto));
+                } else {
+                    coach = coachMapper.toEntity(coachDto);
+                }
+                coach.setTeam(entity);
+                entity.addCoach(coach);
+            }
+        } else if (dto.getHeadCoachId() != null) {
+            // Logique fallback : gestion par ID d'entraîneur principal uniquement
             CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
             headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
             entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH
@@ -154,12 +174,24 @@ public class TeamAdapter {
             if (entity.getCoaches().stream().noneMatch(c -> c.getId().equals(dto.getHeadCoachId()))) {
                 entity.addCoach(headCoach);
             }
-        } else {
-            entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
         }
 
-        // Optionnel : Gérer les autres membres du staff si nécessaire
-        // Pour l'instant on garde la logique simple demandée par l'utilisateur
+        // --- GESTION DU STAFF MÉDICAL ---
+        if (dto.getMedicalStaff() != null) {
+            entity.getMedicalStaff().clear();
+            for (CoachDTO staffDto : dto.getMedicalStaff()) {
+                CoachEntity staff;
+                if (staffDto.getId() != null && staffDto.getId() > 0) {
+                    staff = coachRepository.findById(staffDto.getId())
+                            .orElseGet(() -> coachMapper.toEntity(staffDto));
+                } else {
+                    staff = coachMapper.toEntity(staffDto);
+                }
+                staff.setTeam(entity);
+                entity.addMedicalStaff(staff);
+            }
+        }
+
 
         // DESIGN
         if (dto.getDesign() != null) {
@@ -170,26 +202,27 @@ public class TeamAdapter {
             } else {
                 designMapper.updateEntityFromDTO(dto.getDesign(), entity.getDesign());
             }
-        } else {
-            entity.setDesign(null);
         }
 
-        // JOUEURS
-        entity.getPlayers().clear();
-        if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
-            List<PlayerEntity> players = dto.getPlayers().stream()
-                    .map(playerMapper::toEntity)
-                    .peek(p -> p.setTeam(entity))
-                    .toList();
-            entity.getPlayers().addAll(players);
-        } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
-            List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
-            entity.getPlayers().addAll(players);
+        // JOUEURS (Conditionnel!)
+        // On ne vide la liste que si de nouveaux joueurs ou IDs sont fournis
+        if (dto.getPlayers() != null || dto.getPlayerIds() != null) {
+            entity.getPlayers().clear();
+            if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
+                List<PlayerEntity> players = dto.getPlayers().stream()
+                        .map(playerMapper::toEntity)
+                        .peek(p -> p.setTeam(entity))
+                        .toList();
+                entity.getPlayers().addAll(players);
+            } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
+                List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
+                entity.getPlayers().addAll(players);
+            }
         }
 
-        // SQUAD GROUPS Update
-        entity.getGroups().clear();
-        if (dto.getGroups() != null && !dto.getGroups().isEmpty()) {
+        // SQUAD GROUPS (Conditionnel!)
+        if (dto.getGroups() != null) {
+            entity.getGroups().clear();
             List<SquadGroupEntity> groups = dto.getGroups().stream()
                     .map(groupDto -> {
                         SquadGroupEntity group = squadGroupMapper.toEntity(groupDto);
@@ -205,6 +238,7 @@ public class TeamAdapter {
 
         return teamMapper.toDTO(teamRepository.save(entity));
     }
+
 
     @Transactional
     public void delete(Long id) {

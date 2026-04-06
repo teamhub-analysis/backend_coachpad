@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -89,13 +91,19 @@ public class TeamController {
         try {
             TeamDTO updatedTeam = teamService.updateTeam(id, teamDTO);
             return ResponseEntity.ok(updatedTeam);
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erreur lors de la mise à jour : " + e.getMessage()));
         }
     }
 
     /**
-     * DELETE /api/teams/cleanup-excel - Supprime toutes les équipes importées d'Excel (non-core)
+     * DELETE /api/teams/cleanup-excel - Supprime toutes les équipes importées
+     * d'Excel (non-core)
      */
     @DeleteMapping("/cleanup-excel")
     public ResponseEntity<Void> cleanupExcelTeams() {
@@ -129,24 +137,24 @@ public class TeamController {
      * POST /api/teams/{teamId}/design - Crée un design pour une équipe
      */
     @PostMapping("/{teamId}/design")
-public ResponseEntity<?> createTeamDesign(
-        @PathVariable Long teamId,
-        @Valid @RequestBody TeamDesignDTO designDTO) {
-    try {
-        // Vérifier que l'équipe existe
-        if (teamService.getTeamById(teamId).isEmpty()) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> createTeamDesign(
+            @PathVariable Long teamId,
+            @Valid @RequestBody TeamDesignDTO designDTO) {
+        try {
+            // Vérifier que l'équipe existe
+            if (teamService.getTeamById(teamId).isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // ✅ AJOUT : Associer le teamId au DTO avant de créer le design
+            designDTO.setTeamId(teamId);
+
+            TeamDesignDTO created = teamDesignService.createDesign(designDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        
-        // ✅ AJOUT : Associer le teamId au DTO avant de créer le design
-        designDTO.setTeamId(teamId);
-        
-        TeamDesignDTO created = teamDesignService.createDesign(designDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
     }
-}
 
     /**
      * PUT /api/teams/{teamId}/design - Met à jour le design d'une équipe
@@ -159,7 +167,7 @@ public ResponseEntity<?> createTeamDesign(
             // Récupérer le design existant de l'équipe
             TeamDesignDTO existingDesign = teamDesignService.getDesignByTeamId(teamId)
                     .orElseThrow(() -> new IllegalArgumentException("Design non trouvé pour cette équipe"));
-            
+
             TeamDesignDTO updated = teamDesignService.updateDesign(existingDesign.getId(), designDTO);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
@@ -184,28 +192,71 @@ public ResponseEntity<?> createTeamDesign(
     private final com.coachpad.service.ExcelImportService excelImportService;
 
     /**
-     * POST /api/teams/import - Importe une équipe depuis un fichier Excel pour prévisualisation
+     * POST /api/teams/import - Importe une équipe depuis un fichier Excel pour
+     * prévisualisation
      */
     @PostMapping("/import")
-    public ResponseEntity<?> importTeam(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    public ResponseEntity<?> importTeam(@RequestParam("file") MultipartFile file) {
+
+        // ✅ 1. Validation fichier
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Fichier vide"));
+        }
+
+        if (!file.getOriginalFilename().endsWith(".xlsx")) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Format invalide (seul .xlsx autorisé)"));
+        }
+
         try {
-            TeamDTO importedTeam = excelImportService.parseTeamExcel(file);
-            
-            // ✅ Initialisation des champs obligatoires pour éviter les erreurs de type 'Null' côté Flutter
-            importedTeam.setId(0L);
+            // ✅ 2. Appel bon service
+            TeamDTO importedTeam = excelImportService.importFullTeam(file);
+
+            // ✅ 3. Initialisation safe (sans casser la DB)
             importedTeam.setCreatedAt(java.time.LocalDateTime.now());
             importedTeam.setUpdatedAt(java.time.LocalDateTime.now());
-            
-            // ✅ Identifiants fictifs pour les joueurs importés
+
+            // ⚠️ NE PAS mettre d'ID fixe
+            importedTeam.setId(null);
+
+            // ✅ 4. IDs temporaires FRONT uniquement
             if (importedTeam.getPlayers() != null) {
-                for (int i = 0; i < importedTeam.getPlayers().size(); i++) {
-                    importedTeam.getPlayers().get(i).setId((long) (i + 1));
+                long tempId = -1;
+                for (var player : importedTeam.getPlayers()) {
+                    player.setId(tempId--); // IDs négatifs = temporaire
                 }
             }
-            
-            return ResponseEntity.ok(importedTeam);
+
+            if (importedTeam.getCoaches() != null) {
+                long tempCoachId = -100; // Offset pour différencier des joueurs si besoin
+                for (var coach : importedTeam.getCoaches()) {
+                    coach.setId(tempCoachId--);
+                }
+            }
+
+            if (importedTeam.getMedicalStaff() != null) {
+                long tempMedId = -200;
+                for (var staff : importedTeam.getMedicalStaff()) {
+                    staff.setId(tempMedId--);
+                }
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "team", importedTeam));
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()));
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erreur lors de l'import : " + e.getMessage());
+
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "error", "Erreur interne serveur"));
         }
     }
 }
