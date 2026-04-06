@@ -94,6 +94,15 @@ public class TeamController {
         }
     }
 
+    /**
+     * DELETE /api/teams/cleanup-excel - Supprime toutes les équipes importées d'Excel (non-core)
+     */
+    @DeleteMapping("/cleanup-excel")
+    public ResponseEntity<Void> cleanupExcelTeams() {
+        teamService.cleanupExcelTeams();
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Long id) {
         try {
@@ -175,16 +184,26 @@ public ResponseEntity<?> createTeamDesign(
     private final com.coachpad.service.ExcelImportService excelImportService;
 
     /**
-     * POST /api/teams/import - Importe une équipe depuis un fichier Excel
+     * POST /api/teams/import - Importe une équipe depuis un fichier Excel pour prévisualisation
      */
     @PostMapping("/import")
     public ResponseEntity<?> importTeam(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
             TeamDTO importedTeam = excelImportService.parseTeamExcel(file);
-            // On peut soit retourner le DTO pour modification manuelle, soit le sauvegarder directement
-            // Ici, on le sauvegarde directement pour l'utilisateur
-            TeamDTO created = teamService.createTeam(importedTeam);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            
+            // ✅ Initialisation des champs obligatoires pour éviter les erreurs de type 'Null' côté Flutter
+            importedTeam.setId(0L);
+            importedTeam.setCreatedAt(java.time.LocalDateTime.now());
+            importedTeam.setUpdatedAt(java.time.LocalDateTime.now());
+            
+            // ✅ Identifiants fictifs pour les joueurs importés
+            if (importedTeam.getPlayers() != null) {
+                for (int i = 0; i < importedTeam.getPlayers().size(); i++) {
+                    importedTeam.getPlayers().get(i).setId((long) (i + 1));
+                }
+            }
+            
+            return ResponseEntity.ok(importedTeam);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erreur lors de l'import : " + e.getMessage());
         }

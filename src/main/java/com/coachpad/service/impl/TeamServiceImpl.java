@@ -74,4 +74,9 @@ public class TeamServiceImpl implements TeamService {
     public TeamDTO removeDesignFromTeam(Long teamId) {
         return teamAdapter.removeDesign(teamId);
     }
+
+    @Override
+    public void cleanupExcelTeams() {
+        teamAdapter.cleanupExcelTeams();
+    }
 }

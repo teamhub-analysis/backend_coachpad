@@ -29,4 +29,6 @@ public interface TeamService {
     void deleteTeam(Long id);
     
     TeamDTO removeDesignFromTeam(Long teamId);
+
+    void cleanupExcelTeams();
 }

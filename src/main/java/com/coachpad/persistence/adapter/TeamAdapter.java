@@ -214,6 +214,28 @@ public class TeamAdapter {
         teamRepository.deleteById(id);
     }
 
+    /**
+     * Supprime toutes les équipes qui ne sont pas des équipes "core" (Real Madrid, PSG)
+     */
+    @Transactional
+    public void cleanupExcelTeams() {
+        List<String> coreTeams = java.util.Arrays.asList(
+            "Real Madrid", 
+            "Real Madrid Castilla", 
+            "Real Madrid Juvenil A", 
+            "Paris Saint-Germain", 
+            "PSG U19", 
+            "PSG U17"
+        );
+        
+        List<TeamEntity> allTeams = teamRepository.findAll();
+        List<TeamEntity> teamsToDelete = allTeams.stream()
+            .filter(t -> !coreTeams.contains(t.getName()))
+            .toList();
+            
+        teamRepository.deleteAll(teamsToDelete);
+    }
+
     @Transactional
     public TeamDTO addDesign(Long teamId, TeamDesignDTO designDTO) {
         TeamEntity team = teamRepository.findById(teamId)
