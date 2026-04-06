@@ -45,4 +45,7 @@ public class TeamDTO {
 
     @JsonFormat(pattern = "yyyy-MM-dd['T'HH:mm:ss[.SSS][Z]]")
     private LocalDateTime updatedAt;
+
+    private String source;
+    private String importFileName;
 }

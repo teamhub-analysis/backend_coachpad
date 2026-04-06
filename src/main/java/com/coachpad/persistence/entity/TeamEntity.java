@@ -69,6 +69,12 @@ public class TeamEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "source", length = 20)
+    private String source; // "MANUAL", "EXCEL"
+
+    @Column(name = "import_file_name")
+    private String importFileName;
+
     // Méthodes helper pour gérer la cohérence bidirectionnelle
     public void addPlayer(PlayerEntity player) {
         if (player != null) {
