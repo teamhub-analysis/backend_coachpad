@@ -16,7 +16,8 @@ public enum JerseyDesign {
     PINSTRIPES("Fines rayures", "Rayures verticales fines"),
     GRADIENT("Dégradé", "Dégradé de couleurs"),
     GEOMETRIC("Géométrique", "Motifs géométriques"),
-    CUSTOM("Personnalisé", "Design personnalisé");
+    CUSTOM("Personnalisé", "Design personnalisé"),
+    PLAIN("Uni", "Design uni par défaut (alias de SOLID)");
 
     private final String displayName;
     private final String description;

@@ -41,6 +41,18 @@ public class TeamDesignEntity {
     @JoinColumn(name = "colors_id", nullable = false)
     private TeamKitColorsEntity colors;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gk_style", length = 50)
+    private WidgetAppearance gkStyle;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gk_jersey_design", length = 50)
+    private JerseyDesign gkJerseyDesign;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "gk_colors_id")
+    private TeamKitColorsEntity gkColors;
+
     @OneToOne(mappedBy = "design", fetch = FetchType.LAZY)
     private TeamEntity team;
 
@@ -94,6 +106,19 @@ public class TeamDesignEntity {
         
         if (usePlayerPhotos == null) {
             usePlayerPhotos = false;
+        }
+
+        if (gkStyle == null) {
+            gkStyle = WidgetAppearance.MODERN;
+        }
+
+        if (gkJerseyDesign == null) {
+            gkJerseyDesign = JerseyDesign.PLAIN;
+        }
+
+        if (gkColors == null && colors != null) {
+            // Par défaut, utiliser les mêmes couleurs que les joueurs pour le gardien
+            // (Note: dans une vraie app, on pourrait créer un nouvel objet si besoin)
         }
     }
 }

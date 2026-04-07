@@ -31,9 +31,12 @@ public class TeamDesignDTO {
     @NotNull(message = "Le design du maillot ne peut pas être null")
     private JerseyDesign jerseyDesign;
 
-    @NotNull(message = "Les couleurs ne peuvent pas être null")
     @Valid
     private TeamKitColorsDTO colors;
+
+    private WidgetAppearance gkStyle;
+    private JerseyDesign gkJerseyDesign;
+    private TeamKitColorsDTO gkColors;
 
     /**
      * Constructeur pour la création (sans ID)

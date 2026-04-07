@@ -10,7 +10,8 @@ public enum WidgetAppearance {
     JERSEY("Maillot", "Apparence de type maillot"),
     IMAGE_RECTANGLE("Image Rectangle", "Image dans un cadre rectangulaire"),
     IMAGE_CIRCLE("Image Cercle", "Image dans un cadre circulaire"),
-    CUSTOM("Galerie", "Sélection depuis une galerie d'images personnalisée");
+    CUSTOM("Galerie", "Sélection depuis une galerie d'images personnalisée"),
+    MODERN("Moderne", "Apparence moderne par défaut");
 
     private final String displayName;
     private final String description;
