@@ -1,4 +1,4 @@
-// src/main/java/com/coachpad/persistence/adapter/TeamAdapter.java
+﻿// src/main/java/com/coachpad/persistence/adapter/TeamAdapter.java
 package com.coachpad.persistence.adapter;
 
 import com.coachpad.dto.*;
@@ -41,7 +41,7 @@ public class TeamAdapter {
     @Transactional(readOnly = true)
     public java.util.Optional<TeamDTO> findById(Long id) {
         return teamRepository.findWithAllRelationsById(id).map(entity -> {
-            // S'assurer que les joueurs sont chargés si nécessaire par le mapper
+            // S'assurer que les joueurs sont chargÃ©s si nÃ©cessaire par le mapper
             entity.getPlayers().size();
             return teamMapper.toDTO(entity);
         });
@@ -80,15 +80,15 @@ public class TeamAdapter {
     // ==================== WRITE OPERATIONS ====================
 
     /**
-     * CRÉE UNE ÉQUIPE COMPLÈTE EN 1 REQUÊTE
-     * - Équipe + Design + 11 joueurs (créés)
-     * - OU Équipe + playerIds (joueurs existants)
+     * CRÃ‰E UNE Ã‰QUIPE COMPLÃˆTE EN 1 REQUÃŠTE
+     * - Ã‰quipe + Design + 11 joueurs (crÃ©Ã©s)
+     * - OU Ã‰quipe + playerIds (joueurs existants)
      */
     @Transactional
     public TeamDTO create(TeamDTO dto) {
         validateUniqueName(null, dto.getName());
 
-        // 1. ÉQUIPE
+        // 1. Ã‰QUIPE
         TeamEntity entity = teamMapper.toEntity(dto);
         entity.setFormation(fetchFormation(dto.getFormationId()));
         if (dto.getHeadCoachId() != null) {
@@ -106,14 +106,14 @@ public class TeamAdapter {
 
         // 3. JOUEURS
         if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
-            // → CRÉATION COMPLÈTE DES JOUEURS
+            // â†’ CRÃ‰ATION COMPLÃˆTE DES JOUEURS
             List<PlayerEntity> players = dto.getPlayers().stream()
-                    .map(playerMapper::toEntity) // PlayerDTO → PlayerEntity
+                    .map(playerMapper::toEntity) // PlayerDTO â†’ PlayerEntity
                     .peek(player -> player.setTeam(entity)) // LIAISON AUTOMATIQUE
                     .toList();
             entity.setPlayers(players);
         } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
-            // → JOUEURS DÉJÀ EXISTANTS
+            // â†’ JOUEURS DÃ‰JÃ€ EXISTANTS
             List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
             entity.setPlayers(players);
         }
@@ -141,7 +141,7 @@ public class TeamAdapter {
     @Transactional
     public TeamDTO update(Long id, TeamDTO dto) {
         TeamEntity entity = teamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ã‰quipe non trouvÃ©e : " + id));
 
         validateUniqueName(id, dto.getName());
         teamMapper.updateEntityFromDTO(dto, entity);
@@ -155,12 +155,12 @@ public class TeamAdapter {
             final List<CoachEntity> currentCoaches = entity.getCoaches();
             final List<CoachDTO> newCoachDTOs = dto.getCoaches();
 
-            // 1. Supprimer ceux qui ne sont plus là
+            // 1. Supprimer ceux qui ne sont plus lÃ 
             currentCoaches.removeIf(c -> 
                 newCoachDTOs.stream().noneMatch(dtoC -> dtoC.getId() != null && dtoC.getId().equals(c.getId()))
             );
 
-            // 2. Mettre à jour ou ajouter
+            // 2. Mettre Ã  jour ou ajouter
             for (CoachDTO cDto : newCoachDTOs) {
                 if (cDto.getId() != null && cDto.getId() > 0) {
                     currentCoaches.stream()
@@ -175,7 +175,7 @@ public class TeamAdapter {
             }
         }
 
-        // --- GESTION DU STAFF MÉDICAL ---
+        // --- GESTION DU STAFF MÃ‰DICAL ---
         if (dto.getMedicalStaff() != null) {
             final List<CoachEntity> currentMedical = entity.getMedicalStaff();
             final List<CoachDTO> newMedicalDTOs = dto.getMedicalStaff();
@@ -215,20 +215,23 @@ public class TeamAdapter {
             final List<PlayerEntity> currentPlayers = entity.getPlayers();
             final List<PlayerDTO> newPlayerDTOs = dto.getPlayers();
 
-            // 1. Marquer les joueurs à supprimer (ceux qui sont en DB mais pas dans le DTO)
+            // 1. Marquer les joueurs Ã  supprimer (ceux qui sont en DB mais pas dans le DTO)
             currentPlayers.removeIf(p -> {
                 boolean stay = newPlayerDTOs.stream().anyMatch(dtoP -> dtoP.getId() != null && dtoP.getId().equals(p.getId()));
                 return !stay;
             });
 
-            // 2. Mettre à jour les existants ou ajouter les nouveaux
+            // 2. Mettre Ã  jour les existants ou ajouter les nouveaux
             for (PlayerDTO pDto : newPlayerDTOs) {
                 if (pDto.getId() != null && pDto.getId() > 0) {
                     // Existant
                     currentPlayers.stream()
                         .filter(p -> p.getId().equals(pDto.getId()))
                         .findFirst()
-                        .ifPresent(p -> playerMapper.updateEntityFromDTO(pDto, p));
+                        .ifPresent(p -> {
+                        playerMapper.updateEntityFromDTO(pDto, p);
+                        p.setTeam(entity);
+                    });
                 } else {
                     // Nouveau
                     PlayerEntity newP = playerMapper.toEntity(pDto);
@@ -260,6 +263,7 @@ public class TeamAdapter {
                         .findFirst()
                         .ifPresent(g -> {
                             squadGroupMapper.updateEntityFromDTO(gDto, g);
+                            g.setTeam(entity);
                             if (gDto.getPlayerIds() != null) {
                                 g.setPlayers(fetchPlayers(gDto.getPlayerIds()));
                             }
@@ -283,13 +287,13 @@ public class TeamAdapter {
     @Transactional
     public void delete(Long id) {
         if (!teamRepository.existsById(id)) {
-            throw new EntityNotFoundException("Équipe non trouvée : " + id);
+            throw new EntityNotFoundException("Ã‰quipe non trouvÃ©e : " + id);
         }
         teamRepository.deleteById(id);
     }
 
     /**
-     * Supprime toutes les équipes qui ne sont pas des équipes "core" (Real Madrid, PSG)
+     * Supprime toutes les Ã©quipes qui ne sont pas des Ã©quipes "core" (Real Madrid, PSG)
      */
     @Transactional
     public void cleanupExcelTeams() {
@@ -313,7 +317,7 @@ public class TeamAdapter {
     @Transactional
     public TeamDTO addDesign(Long teamId, TeamDesignDTO designDTO) {
         TeamEntity team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Ã‰quipe non trouvÃ©e : " + teamId));
 
         TeamDesignEntity design = designMapper.toEntity(designDTO);
         design.setTeam(team);
@@ -325,7 +329,7 @@ public class TeamAdapter {
     @Transactional
     public TeamDTO removeDesign(Long teamId) {
         TeamEntity team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Ã‰quipe non trouvÃ©e : " + teamId));
 
         team.setDesign(null);
         return teamMapper.toDTO(teamRepository.save(team));
@@ -339,8 +343,8 @@ public class TeamAdapter {
                 : teamRepository.existsByNameAndIdNot(name, excludeId);
 
         if (exists) {
-            // ✅ IllegalStateException → vrai 409
-            throw new IllegalStateException("Nom d'équipe déjà utilisé : " + name);
+            // âœ… IllegalStateException â†’ vrai 409
+            throw new IllegalStateException("Nom d'Ã©quipe dÃ©jÃ  utilisÃ© : " + name);
         }
     }
 
@@ -348,14 +352,14 @@ public class TeamAdapter {
         if (id == null)
             return null;
         return formationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée : " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvÃ©e : " + id));
     }
 
     private CoachEntity fetchCoach(Long id) {
         if (id == null)
             return null;
         return coachRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Coach non trouvé : " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Coach non trouvÃ© : " + id));
     }
 
     private List<PlayerEntity> fetchPlayers(List<Long> ids) {
@@ -364,7 +368,7 @@ public class TeamAdapter {
             List<Long> missing = ids.stream()
                     .filter(id -> players.stream().noneMatch(p -> p.getId().equals(id)))
                     .toList();
-            throw new EntityNotFoundException("Joueurs non trouvés : " + missing);
+            throw new EntityNotFoundException("Joueurs non trouvÃ©s : " + missing);
         }
         return players;
     }
