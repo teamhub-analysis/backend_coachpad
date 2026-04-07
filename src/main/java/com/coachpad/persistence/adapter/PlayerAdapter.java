@@ -273,4 +273,16 @@ public class PlayerAdapter {
     public void deleteByTeamId(Long teamId) {
         playerRepository.deleteByTeamId(teamId);
     }
+
+    @Transactional
+    public PlayerDTO updatePhotoUrl(Long id, String photoUrl) {
+        PlayerEntity player = playerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Joueur non trouvé avec l'ID : " + id));
+
+        player.setPhotoUrl(photoUrl);
+
+        PlayerEntity updatedPlayer = playerRepository.save(player);
+        return playerMapper.toDTO(updatedPlayer);
+    }
 }

@@ -3,7 +3,6 @@ package com.coachpad.controller;
 import com.coachpad.dto.PlayerDTO;
 import com.coachpad.service.PlayerService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -154,36 +153,6 @@ public class PlayerController {
         try {
             PlayerDTO createdPlayer = playerService.createPlayer(playerDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayer);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/teams/{teamId}/players")
-    public ResponseEntity<PlayerDTO> addPlayerToTeam(
-            @PathVariable("teamId") Long teamId,
-            @Valid @RequestBody PlayerDTO playerDTO) {
-
-        try {
-            PlayerDTO createdPlayer = playerService.createPlayerForTeam(teamId, playerDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayer);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/teams/{teamId}/bulk")
-    public ResponseEntity<List<PlayerDTO>> addPlayersToTeam(
-            @PathVariable("teamId") Long teamId,
-            @Valid @RequestBody List<PlayerDTO> playerDTOs) {
-
-        try {
-            List<PlayerDTO> createdPlayers = playerService.createPlayersForTeam(teamId, playerDTOs);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayers);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }

@@ -14,6 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import com.coachpad.dto.PlayerDTO;
+import com.coachpad.service.PlayerService;
+import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -24,6 +27,7 @@ public class TeamController {
     private final TeamService teamService;
     private final TeamDesignService teamDesignService;
     private final FileStorageService fileStorageService;
+    private final PlayerService playerService;
 
     @GetMapping
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
@@ -203,6 +207,51 @@ public class TeamController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Erreur lors de l'upload du logo : " + e.getMessage()));
+        }
+    }
+
+    // ========== GESTION DES JOUEURS DE L'ÉQUIPE ==========
+
+    /**
+     * GET /api/teams/{teamId}/players - Récupère tous les joueurs d'une équipe
+     */
+    @GetMapping("/{teamId}/players")
+    public ResponseEntity<List<PlayerDTO>> getPlayersByTeamId(@PathVariable Long teamId) {
+        List<PlayerDTO> players = playerService.getPlayersByTeamId(teamId);
+        return ResponseEntity.ok(players);
+    }
+
+    /**
+     * POST /api/teams/{teamId}/players - Ajoute un joueur à une équipe
+     */
+    @PostMapping("/{teamId}/players")
+    public ResponseEntity<PlayerDTO> addPlayerToTeam(
+            @PathVariable Long teamId,
+            @Valid @RequestBody PlayerDTO playerDTO) {
+        try {
+            PlayerDTO created = playerService.createPlayerForTeam(teamId, playerDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * POST /api/teams/{teamId}/players/bulk - Ajoute plusieurs joueurs à une équipe
+     */
+    @PostMapping("/{teamId}/players/bulk")
+    public ResponseEntity<List<PlayerDTO>> addPlayersToTeam(
+            @PathVariable Long teamId,
+            @Valid @RequestBody List<PlayerDTO> playerDTOs) {
+        try {
+            List<PlayerDTO> created = playerService.createPlayersForTeam(teamId, playerDTOs);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 
