@@ -23,7 +23,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // disable CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/error").permitAll() // public endpoints
+                        .requestMatchers("/api/v1/auth/**", "/error", "/uploads/**").permitAll() // public endpoints & uploads
                         .anyRequest().authenticated() // all other requests need auth
                 )
                 .sessionManagement(session -> session

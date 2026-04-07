@@ -14,4 +14,7 @@ public interface CoachMapper {
     CoachEntity toEntity(CoachDTO dto); // ✅ AJOUT
     CoachDTO toDTO(CoachModel model);
     CoachModel toModel(CoachDTO dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDTO(CoachDTO dto, @MappingTarget CoachEntity entity);
 }

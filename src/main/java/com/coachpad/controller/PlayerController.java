@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -214,5 +215,17 @@ public class PlayerController {
     public ResponseEntity<Void> deletePlayersByTeamId(@PathVariable("teamId") Long teamId) {
         playerService.deletePlayersByTeamId(teamId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/photo")
+    public ResponseEntity<PlayerDTO> updatePlayerPhoto(
+            @PathVariable("id") Long id,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            PlayerDTO updatedPlayer = playerService.updatePlayerPhoto(id, file);
+            return ResponseEntity.ok(updatedPlayer);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

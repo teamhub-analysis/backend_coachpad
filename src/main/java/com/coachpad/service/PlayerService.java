@@ -30,4 +30,5 @@ public interface PlayerService {
     void deletePlayersByTeamId(Long teamId);
       PlayerDTO createPlayerForTeam(Long teamId, PlayerDTO playerDTO);
     List<PlayerDTO> createPlayersForTeam(Long teamId, List<PlayerDTO> playerDTOs);
+    PlayerDTO updatePlayerPhoto(Long id, org.springframework.web.multipart.MultipartFile file);
 }

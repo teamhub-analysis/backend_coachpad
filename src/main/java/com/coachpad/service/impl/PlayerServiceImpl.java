@@ -2,9 +2,11 @@ package com.coachpad.service.impl;
 
 import com.coachpad.dto.PlayerDTO;
 import com.coachpad.persistence.adapter.PlayerAdapter;
+import com.coachpad.service.FileStorageService;
 import com.coachpad.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import java.util.Optional;
 public class PlayerServiceImpl implements PlayerService {
 
     private final PlayerAdapter playerAdapter;
+    private final FileStorageService fileStorageService;
 
     @Override
     public List<PlayerDTO> getAllPlayers() {
@@ -134,5 +137,14 @@ public class PlayerServiceImpl implements PlayerService {
     public List<PlayerDTO> createPlayersForTeam(Long teamId, List<PlayerDTO> playerDTOs) {
         // On délègue la logique à l'adaptateur
         return playerAdapter.createBulkForTeam(teamId, playerDTOs);
+    }
+
+    @Override
+    public PlayerDTO updatePlayerPhoto(Long id, MultipartFile file) {
+        // 1. Sauvegarder le fichier (storeFile retourne déjà le chemin relatif /uploads/...)
+        String photoUrl = fileStorageService.storeFile(file, "image");
+        
+        // 2. Mettre à jour l'URL dans la base de données via l'adaptateur
+        return playerAdapter.updatePhotoUrl(id, photoUrl);
     }
 }

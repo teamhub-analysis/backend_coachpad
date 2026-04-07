@@ -13,5 +13,6 @@ public interface TeamDesignService {
     List<TeamDesignDTO> getDesignsByJerseyDesign(String jerseyDesign);
     TeamDesignDTO createDesign(TeamDesignDTO dto);
     TeamDesignDTO updateDesign(Long id, TeamDesignDTO dto);
+    TeamDesignDTO updateTeamLogo(Long teamId, org.springframework.web.multipart.MultipartFile file);
     void deleteDesign(Long id);
 }

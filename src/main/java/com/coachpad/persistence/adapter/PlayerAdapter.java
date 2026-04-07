@@ -46,8 +46,7 @@ public class PlayerAdapter {
     @Transactional(readOnly = true)
     public List<PlayerDTO> findByTeamId(Long teamId) {
         return playerMapper.toDTOList(
-                playerRepository.findByTeamIdOrderByNumberAsc(teamId)
-        );
+                playerRepository.findByTeamIdOrderByNumberAsc(teamId));
     }
 
     @Transactional(readOnly = true)
@@ -59,66 +58,57 @@ public class PlayerAdapter {
     @Transactional(readOnly = true)
     public List<PlayerDTO> findActivePlayersByTeamId(Long teamId) {
         return playerMapper.toDTOList(
-                playerRepository.findActivePlayersByTeamId(teamId)
-        );
+                playerRepository.findActivePlayersByTeamId(teamId));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findByMainPosition(String position) {
         return playerMapper.toDTOList(
-                playerRepository.findByMainPosition(position)
-        );
+                playerRepository.findByMainPosition(position));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findByTeamIdAndPosition(Long teamId, String position) {
         return playerMapper.toDTOList(
-                playerRepository.findByTeamIdAndMainPosition(teamId, position)
-        );
+                playerRepository.findByTeamIdAndMainPosition(teamId, position));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> searchByName(String name) {
         return playerMapper.toDTOList(
-                playerRepository.searchByName(name)
-        );
+                playerRepository.searchByName(name));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findTopScorersByTeamId(Long teamId, int limit) {
         List<PlayerEntity> scorers = playerRepository.findTopScorersByTeamId(teamId);
         return playerMapper.toDTOList(
-                scorers.stream().limit(limit).toList()
-        );
+                scorers.stream().limit(limit).toList());
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findTopAssistersByTeamId(Long teamId, int limit) {
         List<PlayerEntity> assisters = playerRepository.findTopAssistersByTeamId(teamId);
         return playerMapper.toDTOList(
-                assisters.stream().limit(limit).toList()
-        );
+                assisters.stream().limit(limit).toList());
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findInjuredPlayersByTeamId(Long teamId) {
         return playerMapper.toDTOList(
-                playerRepository.findInjuredPlayersByTeamId(teamId)
-        );
+                playerRepository.findInjuredPlayersByTeamId(teamId));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findSuspendedPlayersByTeamId(Long teamId) {
         return playerMapper.toDTOList(
-                playerRepository.findSuspendedPlayersByTeamId(teamId)
-        );
+                playerRepository.findSuspendedPlayersByTeamId(teamId));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerDTO> findAvailablePlayersByTeamId(Long teamId) {
         return playerMapper.toDTOList(
-                playerRepository.findAvailablePlayersByTeamId(teamId)
-        );
+                playerRepository.findAvailablePlayersByTeamId(teamId));
     }
 
     @Transactional(readOnly = true)
@@ -141,7 +131,6 @@ public class PlayerAdapter {
         return playerRepository.existsByNumberAndTeamId(number, teamId);
     }
 
-
     // =================================================================
     // MÉTHODES D'ÉCRITURE (POST, PUT, DELETE)
     // =================================================================
@@ -153,19 +142,16 @@ public class PlayerAdapter {
     public PlayerDTO create(PlayerDTO playerDTO) {
         TeamEntity team = teamRepository.findById(playerDTO.getId())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "L'équipe avec l'ID " + playerDTO.getId() + " n'existe pas"
-                ));
+                        "L'équipe avec l'ID " + playerDTO.getId() + " n'existe pas"));
 
         if (existsByNumberAndTeamId(playerDTO.getNumber(), playerDTO.getId())) {
             throw new IllegalArgumentException(
-                    "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe"
-            );
+                    "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe");
         }
 
         if (playerDTO.getEmail() != null && existsByEmail(playerDTO.getEmail())) {
             throw new IllegalArgumentException(
-                    "L'email " + playerDTO.getEmail() + " est déjà utilisé"
-            );
+                    "L'email " + playerDTO.getEmail() + " est déjà utilisé");
         }
 
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
@@ -188,12 +174,14 @@ public class PlayerAdapter {
 
         // 2. Vérifier que le numéro n'est pas déjà utilisé dans CETTE équipe
         if (existsByNumberAndTeamId(playerDTO.getNumber(), teamId)) {
-            throw new IllegalArgumentException("Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe.");
+            throw new IllegalArgumentException(
+                    "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe.");
         }
 
         // 3. Vérifier que l'email n'est pas déjà utilisé (globalement)
         if (playerDTO.getEmail() != null && existsByEmail(playerDTO.getEmail())) {
-            throw new IllegalArgumentException("L'email " + playerDTO.getEmail() + " est déjà utilisé par un autre joueur.");
+            throw new IllegalArgumentException(
+                    "L'email " + playerDTO.getEmail() + " est déjà utilisé par un autre joueur.");
         }
 
         // 4. Convertir le DTO en entité
@@ -217,7 +205,8 @@ public class PlayerAdapter {
         TeamEntity team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée avec l'ID : " + teamId));
 
-        // 2. Convertir la liste de DTOs en liste d'entités et lier chaque joueur à l'équipe
+        // 2. Convertir la liste de DTOs en liste d'entités et lier chaque joueur à
+        // l'équipe
         List<PlayerEntity> playerEntities = playerDTOs.stream()
                 .map(playerMapper::toEntity)
                 .peek(player -> player.setTeam(team))
@@ -239,31 +228,26 @@ public class PlayerAdapter {
     public PlayerDTO update(Long id, PlayerDTO playerDTO) {
         PlayerEntity existingEntity = playerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Le joueur avec l'ID " + id + " n'existe pas"
-                ));
+                        "Le joueur avec l'ID " + id + " n'existe pas"));
+
+        // ✅ Utiliser l'ID de l'équipe existante, pas celui du joueur
+        Long teamId = existingEntity.getTeam().getId();
 
         if (!existingEntity.getNumber().equals(playerDTO.getNumber()) &&
-            existsByNumberAndTeamId(playerDTO.getNumber(), playerDTO.getId())) {
+                existsByNumberAndTeamId(playerDTO.getNumber(), teamId)) { // ✅ teamId
             throw new IllegalArgumentException(
-                    "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe"
-            );
+                    "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe");
         }
 
         if (playerDTO.getEmail() != null &&
-            !playerDTO.getEmail().equals(existingEntity.getEmail()) &&
-            existsByEmail(playerDTO.getEmail())) {
+                !playerDTO.getEmail().equals(existingEntity.getEmail()) &&
+                existsByEmail(playerDTO.getEmail())) {
             throw new IllegalArgumentException(
-                    "L'email " + playerDTO.getEmail() + " est déjà utilisé"
-            );
+                    "L'email " + playerDTO.getEmail() + " est déjà utilisé");
         }
 
-        if (!existingEntity.getTeam().getId().equals(playerDTO.getId())) {
-            TeamEntity newTeam = teamRepository.findById(playerDTO.getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "L'équipe avec l'ID " + playerDTO.getId() + " n'existe pas"
-                    ));
-            existingEntity.setTeam(newTeam);
-        }
+        // ✅ Supprimer le bloc qui changeait l'équipe via playerDTO.getId()
+        // (un update de joueur ne doit pas changer son équipe)
 
         playerMapper.updateEntityFromDTO(playerDTO, existingEntity);
         PlayerEntity updatedEntity = playerRepository.save(existingEntity);
@@ -277,8 +261,7 @@ public class PlayerAdapter {
     public void delete(Long id) {
         if (!playerRepository.existsById(id)) {
             throw new IllegalArgumentException(
-                    "Le joueur avec l'ID " + id + " n'existe pas"
-            );
+                    "Le joueur avec l'ID " + id + " n'existe pas");
         }
         playerRepository.deleteById(id);
     }

@@ -3,6 +3,7 @@ package com.coachpad.controller;
 import com.coachpad.dto.TeamDTO;
 import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.service.TeamService;
+import com.coachpad.service.FileStorageService;
 import com.coachpad.service.TeamDesignService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class TeamController {
 
     private final TeamService teamService;
     private final TeamDesignService teamDesignService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
@@ -188,6 +190,22 @@ public class TeamController {
         }
     }
 
+    /**
+     * POST /api/teams/{id}/logo - Upload du logo de l'équipe
+     */
+    @PostMapping("/{id}/logo")
+    public ResponseEntity<?> updateTeamLogo(
+            @PathVariable("id") Long id,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            TeamDesignDTO updated = teamDesignService.updateTeamLogo(id, file);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erreur lors de l'upload du logo : " + e.getMessage()));
+        }
+    }
+
     // ========== IMPORT EXCEL ==========
     private final com.coachpad.service.ExcelImportService excelImportService;
 
@@ -210,7 +228,10 @@ public class TeamController {
         }
 
         try {
-            // ✅ 2. Appel bon service
+            // ✅ 2. Sauvegarde du fichier via FileStorageService (optionnel mais demandé)
+            fileStorageService.storeFile(file, "file");
+
+            // ✅ 3. Appel bon service
             TeamDTO importedTeam = excelImportService.importFullTeam(file);
 
             // ✅ 3. Initialisation safe (sans casser la DB)

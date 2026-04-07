@@ -152,43 +152,49 @@ public class TeamAdapter {
 
         // --- GESTION DU STAFF (COACHES) ---
         if (dto.getCoaches() != null) {
-            // Mise à jour de la liste des coaches si fournie
-            entity.getCoaches().clear();
-            for (CoachDTO coachDto : dto.getCoaches()) {
-                CoachEntity coach;
-                if (coachDto.getId() != null && coachDto.getId() > 0) {
-                    coach = coachRepository.findById(coachDto.getId())
-                            .orElseGet(() -> coachMapper.toEntity(coachDto));
+            final List<CoachEntity> currentCoaches = entity.getCoaches();
+            final List<CoachDTO> newCoachDTOs = dto.getCoaches();
+
+            // 1. Supprimer ceux qui ne sont plus là
+            currentCoaches.removeIf(c -> 
+                newCoachDTOs.stream().noneMatch(dtoC -> dtoC.getId() != null && dtoC.getId().equals(c.getId()))
+            );
+
+            // 2. Mettre à jour ou ajouter
+            for (CoachDTO cDto : newCoachDTOs) {
+                if (cDto.getId() != null && cDto.getId() > 0) {
+                    currentCoaches.stream()
+                        .filter(c -> c.getId().equals(cDto.getId()))
+                        .findFirst()
+                        .ifPresent(c -> coachMapper.updateEntityFromDTO(cDto, c));
                 } else {
-                    coach = coachMapper.toEntity(coachDto);
+                    CoachEntity newC = coachMapper.toEntity(cDto);
+                    newC.setTeam(entity);
+                    currentCoaches.add(newC);
                 }
-                coach.setTeam(entity);
-                entity.addCoach(coach);
-            }
-        } else if (dto.getHeadCoachId() != null) {
-            // Logique fallback : gestion par ID d'entraîneur principal uniquement
-            CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
-            headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
-            entity.getCoaches().removeIf(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH
-                    && !c.getId().equals(dto.getHeadCoachId()));
-            if (entity.getCoaches().stream().noneMatch(c -> c.getId().equals(dto.getHeadCoachId()))) {
-                entity.addCoach(headCoach);
             }
         }
 
         // --- GESTION DU STAFF MÉDICAL ---
         if (dto.getMedicalStaff() != null) {
-            entity.getMedicalStaff().clear();
-            for (CoachDTO staffDto : dto.getMedicalStaff()) {
-                CoachEntity staff;
-                if (staffDto.getId() != null && staffDto.getId() > 0) {
-                    staff = coachRepository.findById(staffDto.getId())
-                            .orElseGet(() -> coachMapper.toEntity(staffDto));
+            final List<CoachEntity> currentMedical = entity.getMedicalStaff();
+            final List<CoachDTO> newMedicalDTOs = dto.getMedicalStaff();
+
+            currentMedical.removeIf(m -> 
+                newMedicalDTOs.stream().noneMatch(dtoM -> dtoM.getId() != null && dtoM.getId().equals(m.getId()))
+            );
+
+            for (CoachDTO mDto : newMedicalDTOs) {
+                if (mDto.getId() != null && mDto.getId() > 0) {
+                    currentMedical.stream()
+                        .filter(m -> m.getId().equals(mDto.getId()))
+                        .findFirst()
+                        .ifPresent(m -> coachMapper.updateEntityFromDTO(mDto, m));
                 } else {
-                    staff = coachMapper.toEntity(staffDto);
+                    CoachEntity newM = coachMapper.toEntity(mDto);
+                    newM.setTeam(entity);
+                    currentMedical.add(newM);
                 }
-                staff.setTeam(entity);
-                entity.addMedicalStaff(staff);
             }
         }
 
@@ -204,36 +210,70 @@ public class TeamAdapter {
             }
         }
 
-        // JOUEURS (Conditionnel!)
-        // On ne vide la liste que si de nouveaux joueurs ou IDs sont fournis
-        if (dto.getPlayers() != null || dto.getPlayerIds() != null) {
-            entity.getPlayers().clear();
-            if (dto.getPlayers() != null && !dto.getPlayers().isEmpty()) {
-                List<PlayerEntity> players = dto.getPlayers().stream()
-                        .map(playerMapper::toEntity)
-                        .peek(p -> p.setTeam(entity))
-                        .toList();
-                entity.getPlayers().addAll(players);
-            } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
-                List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
-                entity.getPlayers().addAll(players);
+        // JOUEURS (Merge Strategy)
+        if (dto.getPlayers() != null) {
+            final List<PlayerEntity> currentPlayers = entity.getPlayers();
+            final List<PlayerDTO> newPlayerDTOs = dto.getPlayers();
+
+            // 1. Marquer les joueurs à supprimer (ceux qui sont en DB mais pas dans le DTO)
+            currentPlayers.removeIf(p -> {
+                boolean stay = newPlayerDTOs.stream().anyMatch(dtoP -> dtoP.getId() != null && dtoP.getId().equals(p.getId()));
+                return !stay;
+            });
+
+            // 2. Mettre à jour les existants ou ajouter les nouveaux
+            for (PlayerDTO pDto : newPlayerDTOs) {
+                if (pDto.getId() != null && pDto.getId() > 0) {
+                    // Existant
+                    currentPlayers.stream()
+                        .filter(p -> p.getId().equals(pDto.getId()))
+                        .findFirst()
+                        .ifPresent(p -> playerMapper.updateEntityFromDTO(pDto, p));
+                } else {
+                    // Nouveau
+                    PlayerEntity newP = playerMapper.toEntity(pDto);
+                    newP.setTeam(entity);
+                    currentPlayers.add(newP);
+                }
             }
+        } else if (dto.getPlayerIds() != null && !dto.getPlayerIds().isEmpty()) {
+            List<PlayerEntity> players = fetchPlayers(dto.getPlayerIds());
+            entity.getPlayers().clear();
+            entity.getPlayers().addAll(players);
         }
 
-        // SQUAD GROUPS (Conditionnel!)
+        // SQUAD GROUPS (Merge Strategy)
         if (dto.getGroups() != null) {
-            entity.getGroups().clear();
-            List<SquadGroupEntity> groups = dto.getGroups().stream()
-                    .map(groupDto -> {
-                        SquadGroupEntity group = squadGroupMapper.toEntity(groupDto);
-                        group.setTeam(entity);
-                        if (groupDto.getPlayerIds() != null) {
-                            group.setPlayers(fetchPlayers(groupDto.getPlayerIds()));
-                        }
-                        return group;
-                    })
-                    .toList();
-            entity.getGroups().addAll(groups);
+            final List<SquadGroupEntity> currentGroups = entity.getGroups();
+            final List<SquadGroupDTO> newGroupDTOs = dto.getGroups();
+
+            currentGroups.removeIf(g -> {
+                boolean stay = newGroupDTOs.stream().anyMatch(dtoG -> dtoG.getId() != null && dtoG.getId().equals(g.getId()));
+                return !stay;
+            });
+
+            for (SquadGroupDTO gDto : newGroupDTOs) {
+                if (gDto.getId() != null && gDto.getId() > 0) {
+                    // Existant
+                    currentGroups.stream()
+                        .filter(g -> g.getId().equals(gDto.getId()))
+                        .findFirst()
+                        .ifPresent(g -> {
+                            squadGroupMapper.updateEntityFromDTO(gDto, g);
+                            if (gDto.getPlayerIds() != null) {
+                                g.setPlayers(fetchPlayers(gDto.getPlayerIds()));
+                            }
+                        });
+                } else {
+                    // Nouveau
+                    SquadGroupEntity newG = squadGroupMapper.toEntity(gDto);
+                    newG.setTeam(entity);
+                    if (gDto.getPlayerIds() != null) {
+                        newG.setPlayers(fetchPlayers(gDto.getPlayerIds()));
+                    }
+                    currentGroups.add(newG);
+                }
+            }
         }
 
         return teamMapper.toDTO(teamRepository.save(entity));

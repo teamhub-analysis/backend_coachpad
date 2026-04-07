@@ -9,10 +9,12 @@ import com.coachpad.persistence.Enum.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import com.coachpad.persistence.entity.TeamKitColorsEntity;
 import com.coachpad.persistence.repository.TeamDesignRepository;
+import com.coachpad.service.FileStorageService;
 import com.coachpad.service.TeamDesignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ public class TeamDesignServiceImpl implements TeamDesignService {
     private final TeamDesignRepository teamDesignRepository;
     private final TeamDesignMapper teamDesignMapper;
     private final TeamKitColorsMapper colorsMapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional(readOnly = true)
@@ -133,6 +136,22 @@ public class TeamDesignServiceImpl implements TeamDesignService {
             throw new RuntimeException("Design non trouvé avec id : " + id);
         }
         teamDesignRepository.deleteById(id);
+    }
+
+    @Override
+    public TeamDesignDTO updateTeamLogo(Long teamId, MultipartFile file) {
+        // 1. Récupérer le design de l'équipe
+        TeamDesignEntity design = teamDesignRepository.findByTeamId(teamId)
+                .orElseThrow(() -> new RuntimeException("Design non trouvé pour l'équipe ID : " + teamId));
+
+        // 2. Sauvegarder le fichier (storeFile retourne déjà /uploads/...)
+        String logoUrl = fileStorageService.storeFile(file, "image");
+
+        // 3. Mettre à jour le chemin du logo
+        design.setLogoFilePath(logoUrl);
+        design.setLogoIconName(null); // On privilégie le fichier à l'icône
+        
+        return teamDesignMapper.toDTO(teamDesignRepository.save(design));
     }
 
     // === MÉTHODES UTILITAIRES PRIVÉES ===

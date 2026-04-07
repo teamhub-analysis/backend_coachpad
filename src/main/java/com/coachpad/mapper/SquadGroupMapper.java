@@ -21,4 +21,9 @@ public interface SquadGroupMapper {
     List<SquadGroupDTO> toDTOList(List<SquadGroupEntity> entities);
 
     List<SquadGroupEntity> toEntityList(List<SquadGroupDTO> dtos);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "team", ignore = true)
+    @Mapping(target = "players", ignore = true)
+    void updateEntityFromDTO(SquadGroupDTO dto, @MappingTarget SquadGroupEntity entity);
 }
