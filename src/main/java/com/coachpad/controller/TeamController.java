@@ -28,6 +28,8 @@ public class TeamController {
     private final TeamDesignService teamDesignService;
     private final FileStorageService fileStorageService;
     private final PlayerService playerService;
+    private final com.coachpad.service.ExcelImportService excelImportService;
+    private final com.coachpad.service.CsvImportService csvImportService;
 
     @GetMapping
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
@@ -254,9 +256,21 @@ public class TeamController {
             return ResponseEntity.badRequest().build();
         }
     }
+    
+    /**
+     * DELETE /api/teams/{teamId}/players - Supprime tous les joueurs d'une équipe
+     */
+    @DeleteMapping("/{teamId}/players")
+    public ResponseEntity<Void> deletePlayersByTeamId(@PathVariable Long teamId) {
+        try {
+            playerService.deletePlayersByTeamId(teamId);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-    // ========== IMPORT EXCEL ==========
-    private final com.coachpad.service.ExcelImportService excelImportService;
+    // Remarque : excelImportService est maintenant déplacé avec les autres services injectés via @RequiredArgsConstructor
 
     /**
      * POST /api/teams/import - Importe une équipe depuis un fichier Excel pour
@@ -271,17 +285,23 @@ public class TeamController {
                     "error", "Fichier vide"));
         }
 
-        if (!file.getOriginalFilename().endsWith(".xlsx")) {
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || (!fileName.endsWith(".xlsx") && !fileName.endsWith(".csv"))) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Format invalide (seul .xlsx autorisé)"));
+                    "error", "Format invalide (seul .xlsx et .csv autorisés)"));
         }
 
         try {
             // ✅ 2. Sauvegarde du fichier via FileStorageService (optionnel mais demandé)
             fileStorageService.storeFile(file, "file");
 
-            // ✅ 3. Appel bon service
-            TeamDTO importedTeam = excelImportService.importFullTeam(file);
+            // ✅ 3. Appel bon service selon l'extension
+            TeamDTO importedTeam;
+            if (fileName.endsWith(".csv")) {
+                importedTeam = csvImportService.importFullTeam(file);
+            } else {
+                importedTeam = excelImportService.importFullTeam(file);
+            }
 
             // ✅ 3. Initialisation safe (sans casser la DB)
             importedTeam.setCreatedAt(java.time.LocalDateTime.now());

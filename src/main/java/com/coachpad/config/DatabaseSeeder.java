@@ -16,6 +16,13 @@ public class DatabaseSeeder {
     @Bean
     CommandLineRunner initDatabase(TeamRepository teamRepository) {
         return args -> {
+            System.out.println("Checking database for existing teams before seeding...");
+
+            // On vérifie si les équipes existent déjà par leur nom pour éviter les doublons
+            if (teamRepository.existsByName("Real Madrid")) {
+                System.out.println("Database already seeded with demo teams. Skipping...");
+                return;
+            }
 
             // --- REAL MADRID ---
             TeamEntity realMadrid = createRealMadridSenior();
@@ -28,6 +35,7 @@ public class DatabaseSeeder {
             TeamEntity psgU17 = createPSGU17();
 
             teamRepository.saveAll(List.of(realMadrid, castilla, juvenilA, psg, psgU19, psgU17));
+            System.out.println("Database seeded successfully with Real Madrid and PSG teams.");
         };
     }
 
