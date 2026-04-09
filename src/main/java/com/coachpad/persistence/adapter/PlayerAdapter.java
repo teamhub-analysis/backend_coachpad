@@ -140,11 +140,11 @@ public class PlayerAdapter {
      */
     @Transactional
     public PlayerDTO create(PlayerDTO playerDTO) {
-        TeamEntity team = teamRepository.findById(playerDTO.getId())
+        TeamEntity team = teamRepository.findById(playerDTO.getTeamId())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "L'équipe avec l'ID " + playerDTO.getId() + " n'existe pas"));
+                        "L'équipe avec l'ID " + playerDTO.getTeamId() + " n'existe pas"));
 
-        if (existsByNumberAndTeamId(playerDTO.getNumber(), playerDTO.getId())) {
+        if (existsByNumberAndTeamId(playerDTO.getNumber(), playerDTO.getTeamId())) {
             throw new IllegalArgumentException(
                     "Le numéro " + playerDTO.getNumber() + " est déjà utilisé dans cette équipe");
         }

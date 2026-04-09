@@ -2,9 +2,11 @@ package com.coachpad.persistence.repository;
 
 import com.coachpad.persistence.entity.PlayerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -147,5 +149,7 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
     /**
      * Supprime tous les joueurs d'une équipe
      */
+    @Modifying
+    @Transactional
     void deleteByTeamId(Long teamId);
 }
