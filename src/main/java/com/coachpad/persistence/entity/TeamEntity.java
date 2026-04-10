@@ -23,7 +23,7 @@ public class TeamEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, unique = true)
     @NotBlank(message = "Le nom de l'équipe est obligatoire")
     private String name;
 

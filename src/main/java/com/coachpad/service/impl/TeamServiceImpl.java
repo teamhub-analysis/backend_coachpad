@@ -3,8 +3,11 @@ package com.coachpad.service.impl;
 import com.coachpad.dto.TeamDTO;
 import com.coachpad.persistence.adapter.TeamAdapter;
 import com.coachpad.service.TeamService;
+import com.coachpad.service.ExcelImportService;
+import com.coachpad.service.CsvImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,8 @@ import java.util.Optional;
 public class TeamServiceImpl implements TeamService {
 
     private final TeamAdapter teamAdapter;
+    private final ExcelImportService excelImportService;
+    private final CsvImportService csvImportService;
 
     @Override
     public List<TeamDTO> getAllTeams() {
@@ -78,5 +83,22 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public void cleanupExcelTeams() {
         teamAdapter.cleanupExcelTeams();
+    }
+
+    @Override
+    public TeamDTO importTeamDirect(MultipartFile file) throws Exception {
+        String fileName = file.getOriginalFilename();
+        TeamDTO importedTeam;
+
+        // ✅ 1. Lecture du fichier selon l'extension
+        if (fileName != null && fileName.endsWith(".csv")) {
+            importedTeam = csvImportService.importFullTeam(file);
+        } else {
+            importedTeam = excelImportService.importFullTeam(file);
+        }
+
+        // ✅ 2. Sauvegarde immédiate
+        // La logique de renommage est déjà gérée dans teamAdapter.create
+        return teamAdapter.create(importedTeam);
     }
 }

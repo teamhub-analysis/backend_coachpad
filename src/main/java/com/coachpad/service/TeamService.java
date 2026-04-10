@@ -1,6 +1,7 @@
 package com.coachpad.service;
 
 import com.coachpad.dto.TeamDTO;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,6 @@ public interface TeamService {
     TeamDTO removeDesignFromTeam(Long teamId);
 
     void cleanupExcelTeams();
+
+    TeamDTO importTeamDirect(MultipartFile file) throws Exception;
 }

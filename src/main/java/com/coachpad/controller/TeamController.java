@@ -349,4 +349,29 @@ public class TeamController {
                     "error", "Erreur interne serveur"));
         }
     }
+
+    /**
+     * POST /api/teams/import-direct - Importe et SAUVEGARDE directement une équipe.
+     * Le nom de l'équipe sera automatiquement préfixé si elle existe déjà.
+     */
+    @PostMapping("/import-direct")
+    public ResponseEntity<?> importTeamDirect(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Fichier vide"));
+        }
+
+        try {
+            TeamDTO savedTeam = teamService.importTeamDirect(file);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "success", true,
+                    "message", "Équipe importée avec succès sous le nom : " + savedTeam.getName(),
+                    "team", savedTeam));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "Erreur lors de l'importation directe : " + e.getMessage()));
+        }
+    }
 }

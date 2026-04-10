@@ -85,17 +85,26 @@ public class TeamAdapter {
      */
     @Transactional
     public TeamDTO create(TeamDTO dto) {
-        // 1. Vérifier si une équipe avec ce nom existe déjà
-        java.util.Optional<TeamEntity> existingTeam = teamRepository.findByName(dto.getName());
+        // 1. GESTION DU NOM UNIQUE (Auto-renommage)
+        String originalName = dto.getName();
+        String currentName = originalName;
+        int counter = 1;
+
+        // Tant que le nom existe, on incrémente le suffixe (ex: "Nom (1)")
+        while (teamRepository.existsByName(currentName)) {
+            currentName = originalName + " (" + counter + ")";
+            counter++;
+        }
         
-        if (existingTeam.isPresent()) {
-            // Si elle existe, on effectue une Mise à jour dynamique (Update)
-            // Cela évite "l'écrasement" d'identifiants et préserve les liens
-            return update(existingTeam.get().getId(), dto);
+        if (!currentName.equals(originalName)) {
+            System.out.println("🔄 Renommage automatique de l'équipe : " + originalName + " -> " + currentName);
+            dto.setName(currentName);
         }
 
         // Sinon, création normale
         TeamEntity entity = teamMapper.toEntity(dto);
+        // Forcer l'ID à null pour garantir une création (POST)
+        entity.setId(null);
         entity.setFormation(fetchFormation(dto.getFormationId()));
         if (dto.getHeadCoachId() != null) {
             CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
@@ -148,6 +157,15 @@ public class TeamAdapter {
     public TeamDTO update(Long id, TeamDTO dto) {
         TeamEntity entity = teamRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée : " + id));
+
+        // PROTECTION : Si c'est une équipe protégée et qu'on tente de changer son nom
+        // On préfère créer une nouvelle équipe plutôt que d'écraser l'officielle
+        List<String> coreTeams = java.util.Arrays.asList("Real Madrid", "Paris Saint-Germain", "PSG", "PSG U19", "PSG U17");
+        if (coreTeams.contains(entity.getName()) && !entity.getName().equals(dto.getName())) {
+            // On réinitialise l'ID pour forcer une création d'une nouvelle entité
+            dto.setId(null);
+            return create(dto);
+        }
 
         validateUniqueName(id, dto.getName());
         teamMapper.updateEntityFromDTO(dto, entity);

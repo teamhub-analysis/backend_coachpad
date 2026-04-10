@@ -64,7 +64,7 @@ public interface TeamMapper {
     // 🔹 Mise à jour partielle
     // ==========================================================
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     @Mapping(target = "formation", ignore = true)
     @Mapping(target = "coaches", ignore = true)
     @Mapping(target = "design", ignore = true)
