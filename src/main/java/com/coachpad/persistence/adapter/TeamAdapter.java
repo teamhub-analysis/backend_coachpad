@@ -80,15 +80,21 @@ public class TeamAdapter {
     // ==================== WRITE OPERATIONS ====================
 
     /**
-     * CRÉE UNE ÉQUIPE COMPLÈTE EN 1 REQUÊTE
-     * - Équipe + Design + 11 joueurs (créés)
-     * - OU Équipe + playerIds (joueurs existants)
+     * CRÉE OU MET À JOUR UNE ÉQUIPE (UPSERT)
+     * Si le nom d'équipe existe déjà, met à jour l'équipe existante.
      */
     @Transactional
     public TeamDTO create(TeamDTO dto) {
-        validateUniqueName(null, dto.getName());
+        // 1. Vérifier si une équipe avec ce nom existe déjà
+        java.util.Optional<TeamEntity> existingTeam = teamRepository.findByName(dto.getName());
+        
+        if (existingTeam.isPresent()) {
+            // Si elle existe, on effectue une Mise à jour dynamique (Update)
+            // Cela évite "l'écrasement" d'identifiants et préserve les liens
+            return update(existingTeam.get().getId(), dto);
+        }
 
-        // 1. ÉQUIPE
+        // Sinon, création normale
         TeamEntity entity = teamMapper.toEntity(dto);
         entity.setFormation(fetchFormation(dto.getFormationId()));
         if (dto.getHeadCoachId() != null) {
@@ -302,8 +308,11 @@ public class TeamAdapter {
             "Real Madrid Castilla", 
             "Real Madrid Juvenil A", 
             "Paris Saint-Germain", 
+            "PSG",
             "PSG U19", 
-            "PSG U17"
+            "PSG U17",
+            "Brésil",
+            "Allemagne"
         );
         
         List<TeamEntity> allTeams = teamRepository.findAll();

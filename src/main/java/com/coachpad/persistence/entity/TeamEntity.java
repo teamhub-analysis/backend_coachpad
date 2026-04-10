@@ -43,13 +43,8 @@ public class TeamEntity {
 
     @Builder.Default
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-        name = "team_medical_staff",
-        joinColumns = @JoinColumn(name = "team_id"),
-        inverseJoinColumns = @JoinColumn(name = "coach_id")
-    )
+    @JoinTable(name = "team_medical_staff", joinColumns = @JoinColumn(name = "team_id"), inverseJoinColumns = @JoinColumn(name = "coach_id"))
     private List<CoachEntity> medicalStaff = new ArrayList<>();
-
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id")
@@ -122,7 +117,6 @@ public class TeamEntity {
             staff.setTeam(null);
         }
     }
-
 
     // Callbacks JPA pour timestamps automatiques
     @PrePersist
