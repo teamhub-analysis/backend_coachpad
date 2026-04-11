@@ -18,24 +18,39 @@ public class DatabaseSeeder {
                 return args -> {
                         System.out.println("Checking database for existing teams before seeding...");
 
-                        // On vérifie si les équipes existent déjà par leur nom pour éviter les doublons
-                        if (teamRepository.existsByName("Real Madrid")) {
-                                System.out.println("Database already seeded with demo teams. Skipping...");
-                                return;
+                        // --- REAL MADRID ---
+                        if (!teamRepository.existsByName("Real Madrid")) {
+                                teamRepository.save(createRealMadridSenior());
+                                System.out.println("Seeded: Real Madrid Senior");
                         }
 
-                        // --- REAL MADRID ---
-                        TeamEntity realMadrid = createRealMadridSenior();
-                        TeamEntity castilla = createRealMadridCastilla();
-                        TeamEntity juvenilA = createRealMadridJuvenilA();
+                        if (!teamRepository.existsByName("Real Madrid Castilla")) {
+                                teamRepository.save(createRealMadridCastilla());
+                                System.out.println("Seeded: Real Madrid Castilla");
+                        }
+
+                        if (!teamRepository.existsByName("Real Madrid Juvenil A")) {
+                                teamRepository.save(createRealMadridJuvenilA());
+                                System.out.println("Seeded: Real Madrid Juvenil A");
+                        }
 
                         // --- PSG ---
-                        TeamEntity psg = createPSGSenior();
-                        TeamEntity psgU19 = createPSGU19();
-                        TeamEntity psgU17 = createPSGU17();
+                        if (!teamRepository.existsByName("Paris Saint-Germain")) {
+                                teamRepository.save(createPSGSenior());
+                                System.out.println("Seeded: Paris Saint-Germain (PSG Senior)");
+                        }
 
-                        teamRepository.saveAll(List.of(realMadrid, castilla, juvenilA, psg, psgU19, psgU17));
-                        System.out.println("Database seeded successfully with Real Madrid and PSG teams.");
+                        if (!teamRepository.existsByName("PSG U19")) {
+                                teamRepository.save(createPSGU19());
+                                System.out.println("Seeded: PSG U19");
+                        }
+
+                        if (!teamRepository.existsByName("PSG U17")) {
+                                teamRepository.save(createPSGU17());
+                                System.out.println("Seeded: PSG U17");
+                        }
+
+                        System.out.println("Database seeding check completed.");
                 };
         }
 
