@@ -160,7 +160,7 @@ public class TeamAdapter {
 
         // PROTECTION : Si c'est une équipe protégée et qu'on tente de changer son nom
         // On préfère créer une nouvelle équipe plutôt que d'écraser l'officielle
-        List<String> coreTeams = java.util.Arrays.asList("Real Madrid", "Paris Saint-Germain", "PSG", "PSG U19", "PSG U17");
+        List<String> coreTeams = java.util.Arrays.asList("France", "France Espoirs", "France U19", "Tunisia", "Tunisia U23", "Tunisia U20");
         if (coreTeams.contains(entity.getName()) && !entity.getName().equals(dto.getName())) {
             // On réinitialise l'ID pour forcer une création d'une nouvelle entité
             dto.setId(null);
@@ -317,18 +317,17 @@ public class TeamAdapter {
     }
 
     /**
-     * Supprime toutes les équipes qui ne sont pas des équipes "core" (Real Madrid, PSG)
+     * Supprime toutes les équipes qui ne sont pas des équipes "core" (France, Tunisia)
      */
     @Transactional
     public void cleanupExcelTeams() {
         List<String> coreTeams = java.util.Arrays.asList(
-            "Real Madrid", 
-            "Real Madrid Castilla", 
-            "Real Madrid Juvenil A", 
-            "Paris Saint-Germain", 
-            "PSG",
-            "PSG U19", 
-            "PSG U17",
+            "France", 
+            "France Espoirs", 
+            "France U19", 
+            "Tunisia", 
+            "Tunisia U23", 
+            "Tunisia U20",
             "Brésil",
             "Allemagne"
         );
