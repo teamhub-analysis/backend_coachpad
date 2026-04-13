@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/team-designs")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class TeamDesignController {
 
     private final TeamDesignService teamDesignService;

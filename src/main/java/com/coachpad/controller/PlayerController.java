@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/players")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PlayerController {
 
     private final PlayerService playerService;

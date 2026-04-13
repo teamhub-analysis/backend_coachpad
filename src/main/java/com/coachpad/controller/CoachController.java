@@ -12,7 +12,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/coaches")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class CoachController {
 
     private final CoachService coachService;

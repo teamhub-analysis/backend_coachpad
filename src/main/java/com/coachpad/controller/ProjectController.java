@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Autorise le mobile en dev
 public class ProjectController {
 
     private final ProjectService projectService;

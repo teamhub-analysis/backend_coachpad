@@ -3,20 +3,38 @@ package com.coachpad.config;
 import com.coachpad.persistence.Enum.*;
 import com.coachpad.persistence.entity.*;
 import com.coachpad.persistence.repository.TeamRepository;
+import com.coachpad.persistence.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class DatabaseSeeder {
 
+        private final PasswordEncoder passwordEncoder;
+
         @Bean
-        CommandLineRunner initDatabase(TeamRepository teamRepository) {
+        CommandLineRunner initDatabase(TeamRepository teamRepository, UserRepository userRepository) {
                 return args -> {
-                        System.out.println("Checking database for existing teams before seeding...");
+                        System.out.println("Checking database for existing teams and users before seeding...");
+                        System.out.println("Current user count in 'users' table: " + userRepository.count());
+
+                        if (userRepository.count() == 0) {
+                                UserEntity defaultUser = UserEntity.builder()
+                                                .email("user@coachpad.com")
+                                                .password(passwordEncoder.encode("password123"))
+                                                .build();
+                                userRepository.save(defaultUser);
+                                System.out.println("Seeded: Default User (user@coachpad.com / password123)");
+                        }
+
 
                         // --- REAL MADRID ---
                         if (!teamRepository.existsByName("Real Madrid")) {

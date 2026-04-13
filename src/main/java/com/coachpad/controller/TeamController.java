@@ -21,7 +21,6 @@ import jakarta.persistence.EntityNotFoundException;
 @RestController
 @RequestMapping("/api/teams")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class TeamController {
 
     private final TeamService teamService;

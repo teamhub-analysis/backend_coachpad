@@ -9,6 +9,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,4 +63,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "A record with this data already exists"));
     }
-}
+
+    // 🔴 Catch-all for any other exception (500 Internal Server Error)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        logger.error("Unhandled exception: ", ex);
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Internal Server Error",
+                    "message", ex.getMessage() != null ? ex.getMessage() : "Unknown error",
+                    "type", ex.getClass().getSimpleName()
+                ));
+    }
+}
