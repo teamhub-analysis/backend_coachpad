@@ -12,5 +12,7 @@ public enum ProjectCategory {
     ANALYSIS,
     FOLDER,
     MICROCYCLE,
-    TEMPLATE
+    TEMPLATE,
+    MACROCYCLE,
+    MESOCYCLE
 }

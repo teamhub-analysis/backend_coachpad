@@ -56,6 +56,21 @@ public class ProjectEntity {
     private LocalDateTime matchDate;
     private String weekType;
 
+    @ElementCollection
+    @CollectionTable(name = "project_tags", joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
+
+    // Periodization Metadata
+    private int intensity = 0;
+    private String timeSlot;
+    private Integer microcycleNumber;
+    private Integer sessionNumber;
+    private String opponentName;
+
+    @Column(columnDefinition = "TEXT")
+    private String thumbnailBase64;
+
     // Instructions tactiques (Exercise)
     @Column(columnDefinition = "TEXT")
     private String objectif;

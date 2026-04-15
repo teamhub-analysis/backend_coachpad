@@ -27,6 +27,15 @@ public class ProjectDTO {
     private LocalDateTime endDate;
     private LocalDateTime matchDate;
     private String weekType;
+    private List<String> tags;
+
+    // Periodization Metadata
+    private int intensity;
+    private String timeSlot;
+    private Integer microcycleNumber;
+    private Integer sessionNumber;
+    private String opponentName;
+    private String thumbnailBase64;
 
     // Tactical Info
     private String objectif;
