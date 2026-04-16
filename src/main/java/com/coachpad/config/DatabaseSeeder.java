@@ -77,8 +77,7 @@ public class DatabaseSeeder {
                                 .primaryHex("#21304D").secondaryHex("#FFFFFF").trimHex("#ED2939").build();
                 TeamDesignEntity design = TeamDesignEntity.builder()
                                 .style(WidgetAppearance.CIRCLE).jerseyDesign(JerseyDesign.SOLID).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/France_national_football_team_crest.svg/1200px-France_national_football_team_crest.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/fr.png")
                                 .usePlayerPhotos(true).build();
                 TeamEntity team = TeamEntity.builder()
                                 .name("France").nickname("Les Bleus").ageCategory("SENIOR").design(design)
@@ -153,8 +152,7 @@ public class DatabaseSeeder {
                                 .build();
                 TeamDesignEntity design = TeamDesignEntity.builder().style(WidgetAppearance.CIRCLE)
                                 .jerseyDesign(JerseyDesign.SOLID).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/France_national_football_team_crest.svg/1200px-France_national_football_team_crest.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/fr.png")
                                 .usePlayerPhotos(true).build();
                 TeamEntity team = TeamEntity.builder().name("France Espoirs").nickname("Les Espoirs")
                                 .ageCategory("U21")
@@ -177,8 +175,7 @@ public class DatabaseSeeder {
                                 .build();
                 TeamDesignEntity design = TeamDesignEntity.builder().style(WidgetAppearance.CIRCLE)
                                 .jerseyDesign(JerseyDesign.SOLID).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/France_national_football_team_crest.svg/1200px-France_national_football_team_crest.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/fr.png")
                                 .usePlayerPhotos(false).build();
                 TeamEntity team = TeamEntity.builder().name("France U19").nickname("Bleuets")
                                 .ageCategory("U19")
@@ -198,8 +195,7 @@ public class DatabaseSeeder {
                                 .trimHex("#FFFFFF").build();
                 TeamDesignEntity design = TeamDesignEntity.builder().style(WidgetAppearance.CIRCLE)
                                 .jerseyDesign(JerseyDesign.GEOMETRIC).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/Tunisian_Football_Federation_Logo.svg/1200px-Tunisian_Football_Federation_Logo.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/tn.png")
                                 .usePlayerPhotos(true).build();
                 TeamEntity team = TeamEntity.builder().name("Tunisia").nickname("Les Aigles de Carthage").ageCategory("SENIOR")
                                 .design(design).build();
@@ -249,8 +245,7 @@ public class DatabaseSeeder {
                                 .build();
                 TeamDesignEntity design = TeamDesignEntity.builder().style(WidgetAppearance.CIRCLE)
                                 .jerseyDesign(JerseyDesign.GEOMETRIC).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/Tunisian_Football_Federation_Logo.svg/1200px-Tunisian_Football_Federation_Logo.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/tn.png")
                                 .usePlayerPhotos(false).build();
                 TeamEntity team = TeamEntity.builder().name("Tunisia U23").nickname("Aiglons").ageCategory("U23")
                                 .design(design).build();
@@ -269,8 +264,7 @@ public class DatabaseSeeder {
                                 .build();
                 TeamDesignEntity design = TeamDesignEntity.builder().style(WidgetAppearance.CIRCLE)
                                 .jerseyDesign(JerseyDesign.GEOMETRIC).colors(colors)
-                                .logoFilePath(
-                                                "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/Tunisian_Football_Federation_Logo.svg/1200px-Tunisian_Football_Federation_Logo.svg.png")
+                                .logoFilePath("https://flagcdn.com/w320/tn.png")
                                 .usePlayerPhotos(false).build();
                 TeamEntity team = TeamEntity.builder().name("Tunisia U20").nickname("Jeunes Aigles").ageCategory("U20")
                                 .design(design)
