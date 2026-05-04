@@ -26,4 +26,7 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, String> 
 
     // Récupérer les favoris d'une catégorie
     List<ProjectEntity> findByCategoryAndIsFavoriteTrue(ProjectCategory category);
+
+    // Récupérer tous les enfants d'un projet
+    List<ProjectEntity> findByParentId(String parentId);
 }

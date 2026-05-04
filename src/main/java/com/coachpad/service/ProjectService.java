@@ -77,6 +77,29 @@ public class ProjectService {
 
     @Transactional
     public void deleteProject(String id) {
+        Optional<ProjectEntity> projectOpt = projectRepository.findById(id);
+        if (projectOpt.isEmpty()) return;
+
+        ProjectEntity project = projectOpt.get();
+
+        // 1. Supprimer les enfants liés par parentId (Macro -> Meso -> Micro)
+        List<ProjectEntity> children = projectRepository.findByParentId(id);
+        for (ProjectEntity child : children) {
+            deleteProject(child.getId());
+        }
+
+        // 2. Supprimer les enfants liés par listes d'IDs (Micro -> Session, Session -> Exercise)
+        if (project.getCategory() == ProjectCategory.MICROCYCLE && project.getSessionIds() != null) {
+            for (String sessionId : project.getSessionIds()) {
+                deleteProject(sessionId);
+            }
+        } else if (project.getCategory() == ProjectCategory.SESSION && project.getExerciseIds() != null) {
+            for (String exerciseId : project.getExerciseIds()) {
+                deleteProject(exerciseId);
+            }
+        }
+
+        // 3. Enfin supprimer le projet lui-même
         projectRepository.deleteById(id);
     }
 }

@@ -167,6 +167,7 @@ public class TeamAdapter {
             return create(dto);
         }
 
+        System.out.println("DEBUG: Updating Team " + id + " (" + entity.getName() + ")");
         validateUniqueName(id, dto.getName());
         teamMapper.updateEntityFromDTO(dto, entity);
 
@@ -239,25 +240,41 @@ public class TeamAdapter {
             final List<PlayerEntity> currentPlayers = entity.getPlayers();
             final List<PlayerDTO> newPlayerDTOs = dto.getPlayers();
 
+            System.out.println("DEBUG: Player Sync - Current: " + currentPlayers.size() + ", Incoming: " + newPlayerDTOs.size());
+
             // 1. Marquer les joueurs à supprimer (ceux qui sont en DB mais pas dans le DTO)
             currentPlayers.removeIf(p -> {
                 boolean stay = newPlayerDTOs.stream().anyMatch(dtoP -> dtoP.getId() != null && dtoP.getId().equals(p.getId()));
+                if (!stay) {
+                    System.out.println("DEBUG: Removing Player ID: " + p.getId() + " (" + p.getFullName() + ")");
+                }
                 return !stay;
             });
 
             // 2. Mettre à jour les existants ou ajouter les nouveaux
             for (PlayerDTO pDto : newPlayerDTOs) {
                 if (pDto.getId() != null && pDto.getId() > 0) {
-                    // Existant
-                    currentPlayers.stream()
+                    // Existant - On cherche dans la liste actuelle (déjà filtrée)
+                    PlayerEntity existing = currentPlayers.stream()
                         .filter(p -> p.getId().equals(pDto.getId()))
                         .findFirst()
-                        .ifPresent(p -> {
-                        playerMapper.updateEntityFromDTO(pDto, p);
-                        p.setTeam(entity);
-                    });
+                        .orElse(null);
+                    
+                    if (existing != null) {
+                        playerMapper.updateEntityFromDTO(pDto, existing);
+                        existing.setTeam(entity);
+                    } else {
+                        // Cas rare : le joueur a un ID mais n'est pas lié à cette équipe dans la session actuelle
+                        // On le traite comme un nouveau joueur pour éviter le StaleObjectStateException
+                        System.out.println("DEBUG: Player ID " + pDto.getId() + " not found in current team list. Re-creating...");
+                        PlayerEntity reCreated = playerMapper.toEntity(pDto);
+                        reCreated.setId(null); // On force la création pour éviter les conflits
+                        reCreated.setTeam(entity);
+                        currentPlayers.add(reCreated);
+                    }
                 } else {
                     // Nouveau
+                    System.out.println("DEBUG: Adding new player: " + pDto.getFirstName() + " " + pDto.getLastName());
                     PlayerEntity newP = playerMapper.toEntity(pDto);
                     newP.setTeam(entity);
                     currentPlayers.add(newP);
@@ -304,7 +321,10 @@ public class TeamAdapter {
             }
         }
 
-        return teamMapper.toDTO(teamRepository.save(entity));
+        System.out.println("DEBUG: Saving Team Entity...");
+        TeamEntity saved = teamRepository.save(entity);
+        System.out.println("DEBUG: Team Saved Successfully. New ID: " + saved.getId());
+        return teamMapper.toDTO(saved);
     }
 
 
