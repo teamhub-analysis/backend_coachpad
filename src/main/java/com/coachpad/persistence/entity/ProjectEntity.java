@@ -28,6 +28,10 @@ public class ProjectEntity {
     @Column(length = 50) // On accepte les IDs "timestamp" du mobile ou des IDs générés
     private String id;
 
+    // Owner of the project — used to filter projects by authenticated user
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(nullable = false)
     private String name;
 

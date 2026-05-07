@@ -10,12 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Service pour la gestion des projets et de leur hiérarchie.
- * Aligné sur la logique frontend.
+ * Toutes les opérations sont filtrées par userId pour l'isolation des données.
  */
 @Service
 @RequiredArgsConstructor
@@ -23,24 +22,28 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
 
-    public List<ProjectEntity> getAllProjects() {
-        return projectRepository.findAll();
+    // ===== USER-SCOPED OPERATIONS =====
+
+    public List<ProjectEntity> getAllProjectsForUser(Long userId) {
+        return projectRepository.findByUserId(userId);
     }
 
-    public List<ProjectEntity> getProjectsByCategory(ProjectCategory category) {
-        return projectRepository.findByCategory(category);
+    public List<ProjectEntity> getProjectsByCategoryForUser(ProjectCategory category, Long userId) {
+        return projectRepository.findByUserIdAndCategory(userId, category);
     }
 
-    public List<ProjectEntity> getChildProjects(String parentId, ProjectCategory category) {
-        return projectRepository.findByParentIdAndCategory(parentId, category);
+    public List<ProjectEntity> getChildProjectsForUser(String parentId, ProjectCategory category, Long userId) {
+        return projectRepository.findByParentIdAndCategoryAndUserId(parentId, category, userId);
     }
 
-    public Optional<ProjectEntity> getProjectById(String id) {
-        return projectRepository.findById(id);
+    public Optional<ProjectEntity> getProjectByIdForUser(String id, Long userId) {
+        return projectRepository.findById(id)
+                .filter(p -> userId.equals(p.getUserId()));
     }
 
     @Transactional
-    public ProjectEntity saveProject(ProjectEntity project) {
+    public ProjectEntity saveProjectForUser(ProjectEntity project, Long userId) {
+        project.setUserId(userId);
         return projectRepository.save(project);
     }
 
@@ -101,5 +104,28 @@ public class ProjectService {
 
         // 3. Enfin supprimer le projet lui-même
         projectRepository.deleteById(id);
+    }
+
+    // ===== LEGACY (kept for compatibility) =====
+
+    public List<ProjectEntity> getAllProjects() {
+        return projectRepository.findAll();
+    }
+
+    public List<ProjectEntity> getProjectsByCategory(ProjectCategory category) {
+        return projectRepository.findByCategory(category);
+    }
+
+    public List<ProjectEntity> getChildProjects(String parentId, ProjectCategory category) {
+        return projectRepository.findByParentIdAndCategory(parentId, category);
+    }
+
+    public Optional<ProjectEntity> getProjectById(String id) {
+        return projectRepository.findById(id);
+    }
+
+    @Transactional
+    public ProjectEntity saveProject(ProjectEntity project) {
+        return projectRepository.save(project);
     }
 }

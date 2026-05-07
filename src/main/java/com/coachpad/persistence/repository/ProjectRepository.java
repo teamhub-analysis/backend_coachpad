@@ -15,6 +15,22 @@ import java.util.List;
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectEntity, String> {
 
+    // ===== USER-SCOPED QUERIES =====
+    
+    // Récupérer tous les projets d'un utilisateur
+    List<ProjectEntity> findByUserId(Long userId);
+
+    // Récupérer les projets d'un utilisateur par catégorie
+    List<ProjectEntity> findByUserIdAndCategory(Long userId, ProjectCategory category);
+
+    // Récupérer les enfants d'un projet filtré par catégorie et utilisateur
+    List<ProjectEntity> findByParentIdAndCategoryAndUserId(String parentId, ProjectCategory category, Long userId);
+
+    // Récupérer tous les enfants d'un projet pour un utilisateur
+    List<ProjectEntity> findByParentIdAndUserId(String parentId, Long userId);
+
+    // ===== LEGACY (NON-SCOPED) QUERIES =====
+
     // Récupérer les enfants d'un projet filtré par catégorie
     List<ProjectEntity> findByParentIdAndCategory(String parentId, ProjectCategory category);
 

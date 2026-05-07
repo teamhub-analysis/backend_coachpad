@@ -23,13 +23,21 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("id", Long.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> extraClaims = new HashMap<>();
+        if (userDetails instanceof com.coachpad.persistence.entity.UserEntity userEntity) {
+            extraClaims.put("id", userEntity.getId());
+        }
+        return generateToken(extraClaims, userDetails);
     }
 
     public String generateToken(
