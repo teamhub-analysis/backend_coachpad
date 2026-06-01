@@ -79,6 +79,135 @@ public class ProjectService {
     }
 
     @Transactional
+    public ProjectEntity updateProject(String id, Long userId, java.util.function.Consumer<ProjectEntity> updater) {
+        return getProjectByIdForUser(id, userId)
+                .map(project -> {
+                    updater.accept(project);
+                    return projectRepository.save(project);
+                })
+                .orElseThrow(() -> new RuntimeException("Project not found: " + id));
+    }
+
+    @Transactional
+    public ProjectEntity updateProjectMetadata(String id, ProjectEntity updates, Long userId) {
+        return getProjectByIdForUser(id, userId)
+                .map(project -> {
+                    if (updates.getName() != null) project.setName(updates.getName());
+                    if (updates.getDescription() != null) project.setDescription(updates.getDescription());
+                    if (updates.getCategory() != null) project.setCategory(updates.getCategory());
+                    if (updates.getParentId() != null) project.setParentId(updates.getParentId());
+                    if (updates.getStartDate() != null) project.setStartDate(updates.getStartDate());
+                    if (updates.getEndDate() != null) project.setEndDate(updates.getEndDate());
+                    if (updates.getMatchDate() != null) project.setMatchDate(updates.getMatchDate());
+                    if (updates.getWeekType() != null) project.setWeekType(updates.getWeekType());
+                    if (updates.getTags() != null) project.setTags(updates.getTags());
+                    if (updates.getThumbnailBase64() != null) project.setThumbnailBase64(updates.getThumbnailBase64());
+                    if (updates.getObjectif() != null) project.setObjectif(updates.getObjectif());
+                    if (updates.getOrganisation() != null) project.setOrganisation(updates.getOrganisation());
+                    if (updates.getConsignes() != null) project.setConsignes(updates.getConsignes());
+                    if (updates.getVariantes() != null) project.setVariantes(updates.getVariantes());
+                    if (updates.getFormation() != null) project.setFormation(updates.getFormation());
+                    if (updates.getHomeTeamId() != null) project.setHomeTeamId(updates.getHomeTeamId());
+                    if (updates.getAwayTeamId() != null) project.setAwayTeamId(updates.getAwayTeamId());
+                    if (updates.getHomeTeamName() != null) project.setHomeTeamName(updates.getHomeTeamName());
+                    if (updates.getAwayTeamName() != null) project.setAwayTeamName(updates.getAwayTeamName());
+                    if (updates.getOpponentName() != null) project.setOpponentName(updates.getOpponentName());
+                    if (updates.getIntensity() > 0) project.setIntensity(updates.getIntensity());
+                    if (updates.getTimeSlot() != null) project.setTimeSlot(updates.getTimeSlot());
+                    if (updates.getMicrocycleNumber() != null) project.setMicrocycleNumber(updates.getMicrocycleNumber());
+                    if (updates.getSessionNumber() != null) project.setSessionNumber(updates.getSessionNumber());
+                    project.setFavorite(updates.isFavorite());
+                    project.setArchived(updates.isArchived());
+                    project.setTemplate(updates.isTemplate());
+                    return projectRepository.save(project);
+                })
+                .orElseThrow(() -> new RuntimeException("Project not found: " + id));
+    }
+
+    @Transactional
+    public ProjectEntity toggleArchive(String id, Long userId) {
+        return updateProject(id, userId, p -> p.setArchived(!p.isArchived()));
+    }
+
+    @Transactional
+    public ProjectEntity toggleFavorite(String id, Long userId) {
+        return updateProject(id, userId, p -> p.setFavorite(!p.isFavorite()));
+    }
+
+    @Transactional
+    public boolean unlinkProject(String parentId, String childId) {
+        Optional<ProjectEntity> parentOpt = projectRepository.findById(parentId);
+        if (parentOpt.isEmpty()) return false;
+
+        ProjectEntity parent = parentOpt.get();
+        boolean removed = parent.getSessionIds().remove(childId);
+        removed |= parent.getExerciseIds().remove(childId);
+
+        if (removed) {
+            projectRepository.save(parent);
+        }
+        return removed;
+    }
+
+    @Transactional
+    public ProjectEntity duplicateProject(String id, Long userId) {
+        return getProjectByIdForUser(id, userId)
+                .map(original -> {
+                    ProjectEntity copy = new ProjectEntity();
+                    copy.setId(java.util.UUID.randomUUID().toString());
+                    copy.setUserId(userId);
+                    copy.setName(original.getName() + " (copie)");
+                    copy.setDescription(original.getDescription());
+                    copy.setCategory(original.getCategory());
+                    copy.setParentId(original.getParentId());
+                    copy.setStartDate(original.getStartDate());
+                    copy.setEndDate(original.getEndDate());
+                    copy.setMatchDate(original.getMatchDate());
+                    copy.setWeekType(original.getWeekType());
+                    copy.setTags(original.getTags() != null ? new java.util.ArrayList<>(original.getTags()) : new java.util.ArrayList<>());
+                    copy.setIntensity(original.getIntensity());
+                    copy.setTimeSlot(original.getTimeSlot());
+                    copy.setMicrocycleNumber(original.getMicrocycleNumber());
+                    copy.setSessionNumber(original.getSessionNumber());
+                    copy.setOpponentName(original.getOpponentName());
+                    copy.setThumbnailBase64(original.getThumbnailBase64());
+                    copy.setObjectif(original.getObjectif());
+                    copy.setOrganisation(original.getOrganisation());
+                    copy.setConsignes(original.getConsignes());
+                    copy.setVariantes(original.getVariantes());
+                    copy.setFormation(original.getFormation());
+                    copy.setHomeTeamId(original.getHomeTeamId());
+                    copy.setAwayTeamId(original.getAwayTeamId());
+                    copy.setHomeTeamName(original.getHomeTeamName());
+                    copy.setAwayTeamName(original.getAwayTeamName());
+                    copy.setFavorite(false);
+                    copy.setArchived(false);
+                    copy.setTemplate(original.isTemplate());
+                    copy.setExerciseIds(original.getExerciseIds() != null ? new java.util.ArrayList<>(original.getExerciseIds()) : new java.util.ArrayList<>());
+                    copy.setSessionIds(original.getSessionIds() != null ? new java.util.ArrayList<>(original.getSessionIds()) : new java.util.ArrayList<>());
+                    return projectRepository.save(copy);
+                })
+                .orElseThrow(() -> new RuntimeException("Project not found: " + id));
+    }
+
+    public List<ProjectEntity> getDescendantProjects(String parentId) {
+        List<ProjectEntity> allDescendants = new java.util.ArrayList<>();
+        collectDescendants(parentId, allDescendants, new java.util.HashSet<>());
+        return allDescendants;
+    }
+
+    private void collectDescendants(String parentId, List<ProjectEntity> result, java.util.Set<String> visited) {
+        if (parentId == null || visited.contains(parentId)) return;
+        visited.add(parentId);
+
+        List<ProjectEntity> children = projectRepository.findByParentId(parentId);
+        for (ProjectEntity child : children) {
+            result.add(child);
+            collectDescendants(child.getId(), result, visited);
+        }
+    }
+
+    @Transactional
     public void deleteProject(String id) {
         Optional<ProjectEntity> projectOpt = projectRepository.findById(id);
         if (projectOpt.isEmpty()) return;

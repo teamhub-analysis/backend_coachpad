@@ -99,6 +99,55 @@ public class ProjectController {
         return success ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectDTO> updateProject(
+            @PathVariable String id,
+            @RequestBody ProjectDTO projectDTO,
+            @AuthenticationPrincipal UserEntity user) {
+        ProjectEntity updates = projectMapper.toEntity(projectDTO);
+        ProjectEntity saved = projectService.updateProjectMetadata(id, updates, user.getId());
+        return ResponseEntity.ok(projectMapper.toDTO(saved));
+    }
+
+    @PatchMapping("/{id}/archive")
+    public ResponseEntity<ProjectDTO> toggleArchive(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserEntity user) {
+        ProjectEntity saved = projectService.toggleArchive(id, user.getId());
+        return ResponseEntity.ok(projectMapper.toDTO(saved));
+    }
+
+    @PatchMapping("/{id}/favorite")
+    public ResponseEntity<ProjectDTO> toggleFavorite(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserEntity user) {
+        ProjectEntity saved = projectService.toggleFavorite(id, user.getId());
+        return ResponseEntity.ok(projectMapper.toDTO(saved));
+    }
+
+    @PostMapping("/unlink")
+    public ResponseEntity<Void> unlinkProject(
+            @RequestParam String parentId,
+            @RequestParam String childId) {
+        boolean success = projectService.unlinkProject(parentId, childId);
+        return success ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
+
+    @PostMapping("/{id}/duplicate")
+    public ResponseEntity<ProjectDTO> duplicateProject(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserEntity user) {
+        ProjectEntity saved = projectService.duplicateProject(id, user.getId());
+        return ResponseEntity.ok(projectMapper.toDTO(saved));
+    }
+
+    @GetMapping("/{parentId}/descendants")
+    public List<ProjectDTO> getDescendants(@PathVariable String parentId) {
+        return projectService.getDescendantProjects(parentId).stream()
+                .map(projectMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
         projectService.deleteProject(id);
