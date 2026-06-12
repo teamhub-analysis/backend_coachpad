@@ -1,8 +1,8 @@
 package com.coachpad.persistence.entity;
 
-import com.coachpad.persistence.Enum.CoachRole;
-import com.coachpad.persistence.Enum.CoachingPhilosophy;
-import com.coachpad.persistence.Enum.LicenseLevel;
+import com.coachpad.model.enums.CoachRole;
+import com.coachpad.model.enums.CoachingPhilosophy;
+import com.coachpad.model.enums.LicenseLevel;
 import jakarta.persistence.*;
 import lombok.*;
 

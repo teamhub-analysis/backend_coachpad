@@ -1,6 +1,6 @@
 package com.coachpad.persistence.entity;
-import com.coachpad.persistence.Enum.JerseyDesign;
-import com.coachpad.persistence.Enum.WidgetAppearance;
+import com.coachpad.model.enums.JerseyDesign;
+import com.coachpad.model.enums.WidgetAppearance;
 
 import jakarta.persistence.*;
 import lombok.*;

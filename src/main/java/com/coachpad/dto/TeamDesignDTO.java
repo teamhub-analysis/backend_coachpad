@@ -1,7 +1,7 @@
 package com.coachpad.dto;
 
-import com.coachpad.persistence.Enum.JerseyDesign;
-import com.coachpad.persistence.Enum.WidgetAppearance;
+import com.coachpad.model.enums.JerseyDesign;
+import com.coachpad.model.enums.WidgetAppearance;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 

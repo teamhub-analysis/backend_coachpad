@@ -1,7 +1,7 @@
 package com.coachpad.persistence.repository;
 
-import com.coachpad.persistence.Enum.CoachingPhilosophy;
-import com.coachpad.persistence.Enum.LicenseLevel;
+import com.coachpad.model.enums.CoachingPhilosophy;
+import com.coachpad.model.enums.LicenseLevel;
 import com.coachpad.persistence.entity.CoachEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

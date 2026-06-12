@@ -1,4 +1,4 @@
-package com.coachpad.persistence.Enum;
+package com.coachpad.model.enums;
 
 import lombok.Getter;
 

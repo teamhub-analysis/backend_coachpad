@@ -1,7 +1,7 @@
 package com.coachpad.persistence.repository;
 
-import com.coachpad.persistence.Enum.JerseyDesign;
-import com.coachpad.persistence.Enum.WidgetAppearance;
+import com.coachpad.model.enums.JerseyDesign;
+import com.coachpad.model.enums.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

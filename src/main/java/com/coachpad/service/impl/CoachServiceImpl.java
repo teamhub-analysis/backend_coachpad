@@ -73,7 +73,7 @@ public class CoachServiceImpl implements CoachService {
     public Optional<CoachModel> getCoachByTeamId(Long teamId) {
         Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
         return teamOpt.flatMap(team -> team.getCoaches().stream()
-                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .filter(c -> c.getRole() == com.coachpad.model.enums.CoachRole.HEAD_COACH)
                 .findFirst()
                 .or(() -> team.getCoaches().stream().findFirst())
                 .map(this::toModel));

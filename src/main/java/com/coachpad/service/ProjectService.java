@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,9 +43,72 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectEntity saveProjectForUser(ProjectEntity project, Long userId) {
-        project.setUserId(userId);
-        return projectRepository.save(project);
+    public ProjectEntity saveProjectForUser(ProjectEntity incoming, Long userId) {
+        incoming.setUserId(userId);
+
+        // UPSERT : si le projet existe déjà, on remplace les scènes
+        Optional<ProjectEntity> existing = projectRepository.findById(incoming.getId());
+        if (existing.isPresent()) {
+            ProjectEntity current = existing.get();
+            incoming.setCreatedAt(current.getCreatedAt());
+
+            // Remplacer les scènes (orphanRemoval = true nettoie les anciennes)
+            current.getScenes().clear();
+            current.getScenes().addAll(incoming.getScenes());
+
+            // Copier tous les champs metadata du incoming vers le current
+            current.setUserId(userId);
+            current.setName(incoming.getName());
+            current.setDescription(incoming.getDescription());
+            current.setCategory(incoming.getCategory());
+            current.setParentId(incoming.getParentId());
+            current.setStartDate(incoming.getStartDate());
+            current.setEndDate(incoming.getEndDate());
+            current.setMatchDate(incoming.getMatchDate());
+            current.setWeekType(incoming.getWeekType());
+            current.setTags(incoming.getTags());
+            current.setIntensity(incoming.getIntensity());
+            current.setTimeSlot(incoming.getTimeSlot());
+            current.setMicrocycleNumber(incoming.getMicrocycleNumber());
+            current.setSessionNumber(incoming.getSessionNumber());
+            current.setOpponentName(incoming.getOpponentName());
+            current.setThumbnailBase64(incoming.getThumbnailBase64());
+            current.setObjectif(incoming.getObjectif());
+            current.setOrganisation(incoming.getOrganisation());
+            current.setConsignes(incoming.getConsignes());
+            current.setVariantes(incoming.getVariantes());
+            current.setSceneCount(incoming.getSceneCount());
+            current.setPlayerCount(incoming.getPlayerCount());
+            current.setHomePlayerCount(incoming.getHomePlayerCount());
+            current.setAwayPlayerCount(incoming.getAwayPlayerCount());
+            current.setObjectCount(incoming.getObjectCount());
+            current.setDrawingCount(incoming.getDrawingCount());
+            current.setTotalDurationSeconds(incoming.getTotalDurationSeconds());
+            current.setHasAnimations(incoming.isHasAnimations());
+            current.setFormation(incoming.getFormation());
+            current.setHomeTeamId(incoming.getHomeTeamId());
+            current.setAwayTeamId(incoming.getAwayTeamId());
+            current.setHomeTeamName(incoming.getHomeTeamName());
+            current.setAwayTeamName(incoming.getAwayTeamName());
+            current.setFavorite(incoming.isFavorite());
+            current.setArchived(incoming.isArchived());
+            current.setTemplate(incoming.isTemplate());
+            current.setViewCount(incoming.getViewCount());
+            current.setModificationCount(incoming.getModificationCount());
+            current.setCommentsCount(incoming.getCommentsCount());
+            current.setLastViewed(incoming.getLastViewed());
+            current.setLastExport(incoming.getLastExport());
+            current.setExerciseIds(incoming.getExerciseIds());
+            current.setSessionIds(incoming.getSessionIds());
+            current.setLastModified(incoming.getLastModified());
+
+            return projectRepository.save(current);
+        }
+
+        // Nouveau projet
+        incoming.setCreatedAt(incoming.getCreatedAt() != null ? incoming.getCreatedAt() : LocalDateTime.now());
+        incoming.setLastModified(incoming.getLastModified() != null ? incoming.getLastModified() : LocalDateTime.now());
+        return projectRepository.save(incoming);
     }
 
     /**
@@ -119,6 +183,7 @@ public class ProjectService {
                     project.setFavorite(updates.isFavorite());
                     project.setArchived(updates.isArchived());
                     project.setTemplate(updates.isTemplate());
+                    if (updates.getLastModified() != null) project.setLastModified(updates.getLastModified());
                     return projectRepository.save(project);
                 })
                 .orElseThrow(() -> new RuntimeException("Project not found: " + id));

@@ -2,8 +2,8 @@ package com.coachpad.persistence.adapter;
 
 import com.coachpad.dto.TeamDesignDTO;
 import com.coachpad.mapper.TeamDesignMapper;
-import com.coachpad.persistence.Enum.JerseyDesign;
-import com.coachpad.persistence.Enum.WidgetAppearance;
+import com.coachpad.model.enums.JerseyDesign;
+import com.coachpad.model.enums.WidgetAppearance;
 import com.coachpad.persistence.entity.TeamDesignEntity;
 import com.coachpad.persistence.repository.TeamDesignRepository;
 

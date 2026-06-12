@@ -16,6 +16,5 @@ public interface SceneMapper {
     @Mapping(source = "order", target = "orderIndex")
     @Mapping(source = "duration", target = "durationMs")
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "lastModified", ignore = true)
     SceneEntity toEntity(SceneDTO dto);
 }

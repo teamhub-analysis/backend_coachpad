@@ -1,6 +1,6 @@
 package com.coachpad.config;
 
-import com.coachpad.persistence.Enum.*;
+import com.coachpad.model.enums.*;
 import com.coachpad.persistence.entity.*;
 import com.coachpad.persistence.repository.TeamRepository;
 import com.coachpad.persistence.repository.UserRepository;

@@ -1,6 +1,6 @@
 package com.coachpad.model;
 
-import com.coachpad.persistence.Enum.ShapeType;
+import com.coachpad.model.enums.ShapeType;
 import jakarta.persistence.*;
 import lombok.*;
 

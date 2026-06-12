@@ -5,7 +5,6 @@ import com.coachpad.model.enums.ProjectCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -113,7 +112,6 @@ public class ProjectEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "last_modified")
     private LocalDateTime lastModified;
 

@@ -1,4 +1,4 @@
-package com.coachpad.persistence.Enum;
+package com.coachpad.model.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public enum FootballPosition {
 
     private final PositionCategory category;
 
-    // ✅ Cache pour performance
+    // Cache pour performance
     private static final Map<PositionCategory, FootballPosition[]> CACHE_BY_CATEGORY = 
         Arrays.stream(values())
             .collect(Collectors.groupingBy(
@@ -60,7 +60,7 @@ public enum FootballPosition {
                 )
             ));
 
-    // ✅ Set pour isCentral()
+    // Set pour isCentral()
     private static final Set<FootballPosition> CENTRAL_POSITIONS = EnumSet.of(
         GK, CB, CDM, CM, CAM, CF, ST, SW, SS, CWB
     );
@@ -98,12 +98,12 @@ public enum FootballPosition {
         return this.name().startsWith("L");
     }
 
-    // ✅ CORRIGÉ
+    // CORRIGÉ
     public boolean isCentral() {
         return CENTRAL_POSITIONS.contains(this);
     }
 
-    // ✅ SIMPLIFIÉ
+    // SIMPLIFIÉ
     public static Optional<FootballPosition> fromName(String name) {
         if (name == null || name.isBlank()) {
             return Optional.empty();
@@ -116,7 +116,7 @@ public enum FootballPosition {
         }
     }
 
-    // ✅ AVEC CACHE
+    // AVEC CACHE
     public static FootballPosition[] getByCategory(PositionCategory category) {
         return CACHE_BY_CATEGORY.getOrDefault(category, new FootballPosition[0]);
     }

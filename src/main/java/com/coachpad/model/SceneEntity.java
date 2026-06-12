@@ -3,7 +3,6 @@ package com.coachpad.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -58,7 +57,6 @@ public class SceneEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "last_modified")
     private LocalDateTime lastModified;
 }

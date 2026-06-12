@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
 
-import com.coachpad.persistence.Enum.FieldType;
+import com.coachpad.model.enums.FieldType;
 
 @Entity
 @Data

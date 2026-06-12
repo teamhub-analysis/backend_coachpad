@@ -1,6 +1,6 @@
 package com.coachpad.persistence.entity;
 
-import com.coachpad.persistence.Enum.FootballPosition;
+import com.coachpad.model.enums.FootballPosition;
 import jakarta.persistence.*;
 import lombok.*;
 

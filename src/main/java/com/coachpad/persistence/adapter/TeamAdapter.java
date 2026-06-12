@@ -108,7 +108,7 @@ public class TeamAdapter {
         entity.setFormation(fetchFormation(dto.getFormationId()));
         if (dto.getHeadCoachId() != null) {
             CoachEntity headCoach = fetchCoach(dto.getHeadCoachId());
-            headCoach.setRole(com.coachpad.persistence.Enum.CoachRole.HEAD_COACH);
+            headCoach.setRole(com.coachpad.model.enums.CoachRole.HEAD_COACH);
             entity.addCoach(headCoach);
         }
 

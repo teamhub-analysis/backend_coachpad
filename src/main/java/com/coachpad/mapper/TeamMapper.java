@@ -27,7 +27,7 @@ public interface TeamMapper {
             return null;
         }
         return entity.getCoaches().stream()
-                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .filter(c -> c.getRole() == com.coachpad.model.enums.CoachRole.HEAD_COACH)
                 .findFirst()
                 .map(com.coachpad.persistence.entity.CoachEntity::getId)
                 .orElse(entity.getCoaches().get(0).getId());
@@ -38,7 +38,7 @@ public interface TeamMapper {
             return null;
         }
         return entity.getCoaches().stream()
-                .filter(c -> c.getRole() == com.coachpad.persistence.Enum.CoachRole.HEAD_COACH)
+                .filter(c -> c.getRole() == com.coachpad.model.enums.CoachRole.HEAD_COACH)
                 .findFirst()
                 .map(c -> c.getFirstName() + " " + c.getLastName())
                 .orElse(entity.getCoaches().get(0).getFirstName() + " " + entity.getCoaches().get(0).getLastName());
