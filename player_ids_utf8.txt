@@ -23,4 +23,26 @@ warren-zaire-emery-player : 106915
 achraf-hakimi-player : 44920
 marquinhos-player : NOT FOUND
 gianluigi-donnarumma-player : 31875
+# --- TUNISIA SENIOR (for b.fssta.com headshots) ---
+aymen-dahmen-player : 65839
+bechir-ben-said-player : 101505
+amanallah-memmiche-player : 135671
+montassar-talbi-player : 50149
+yassine-meriah-player : 53311
+dylan-bronn-player : 50415
+ali-abdi-player : 65840
+yan-valery-player : 62043
+alaa-ghram-player : 113145
+ali-maaloul-player : 13061
+ellyes-skhiri-player : 7512
+aissa-laidouni-player : 41833
+mohamed-ali-ben-romdhane-player : 61941
+hannibal-mejbri-player : 94905
+hamza-rafia-player : 72235
+anis-ben-slimane-player : 74334
+youssef-msakni-player : 13169
+elias-achouri-player : 100323
+seifeddine-jaziri-player : 52987
+sayfallah-ltaief-player : 114443
+elias-saad-player : 130742
 
