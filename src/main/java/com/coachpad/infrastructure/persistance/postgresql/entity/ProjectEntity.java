@@ -24,10 +24,9 @@ import java.util.List;
 public class ProjectEntity {
 
     @Id
-    @Column(length = 50) // On accepte les IDs "timestamp" du mobile ou des IDs gÃ©nÃ©rÃ©s
+    @Column(length = 50)
     private String id;
 
-    // Owner of the project â€” used to filter projects by authenticated user
     @Column(name = "user_id")
     private Long userId;
 
@@ -44,27 +43,30 @@ public class ProjectEntity {
     @Column(name = "parent_id")
     private String parentId;
 
+    @Builder.Default
     @Column(name = "is_template")
     private boolean isTemplate = false;
 
+    @Builder.Default
     @Column(name = "is_favorite")
     private boolean isFavorite = false;
 
+    @Builder.Default
     @Column(name = "is_archived")
     private boolean isArchived = false;
 
-    // MÃ©tadonnÃ©es de contenu (Microcycle / Session / Exercise)
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime matchDate;
     private String weekType;
 
+    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "project_tags", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
 
-    // Periodization Metadata
+    @Builder.Default
     private int intensity = 0;
     private String timeSlot;
     private Integer microcycleNumber;
@@ -74,7 +76,6 @@ public class ProjectEntity {
     @Column(columnDefinition = "TEXT")
     private String thumbnailBase64;
 
-    // Instructions tactiques (Exercise)
     @Column(columnDefinition = "TEXT")
     private String objectif;
     @Column(columnDefinition = "TEXT")
@@ -84,24 +85,32 @@ public class ProjectEntity {
     @Column(columnDefinition = "TEXT")
     private String variantes;
 
-    // Statistiques & Compteurs
+    @Builder.Default
     private int sceneCount = 0;
+    @Builder.Default
     private int playerCount = 0;
+    @Builder.Default
     private int homePlayerCount = 0;
+    @Builder.Default
     private int awayPlayerCount = 0;
+    @Builder.Default
     private int objectCount = 0;
+    @Builder.Default
     private int drawingCount = 0;
+    @Builder.Default
     private int totalDurationSeconds = 0;
+    @Builder.Default
     private boolean hasAnimations = false;
 
-    // Stats de consultation
+    @Builder.Default
     private int viewCount = 0;
+    @Builder.Default
     private int modificationCount = 0;
+    @Builder.Default
     private int commentsCount = 0;
     private LocalDateTime lastViewed;
     private LocalDateTime lastExport;
 
-    // Contenu Global (Ã‰quipes & Formation)
     private String formation;
     private String homeTeamId;
     private String awayTeamId;
@@ -115,21 +124,19 @@ public class ProjectEntity {
     @Column(name = "last_modified")
     private LocalDateTime lastModified;
 
-    // --- Relations Optionnelles ---
-
-    // Un projet peut avoir plusieurs IDs d'exercices liÃ©s (Session -> Exercises)
+    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "project_exercise_links", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "exercise_id")
     private List<String> exerciseIds = new ArrayList<>();
 
-    // Un projet peut avoir plusieurs IDs de sÃ©ances liÃ©s (Microcycle -> Sessions)
+    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "project_session_links", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "session_id")
     private List<String> sessionIds = new ArrayList<>();
 
-    // --- Tactical Content ---
+    @Builder.Default
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "project_id")
     @OrderBy("orderIndex ASC")

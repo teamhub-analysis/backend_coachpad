@@ -10,9 +10,10 @@ public interface FormationEntityMapper {
 
     FormationModel toModel(FormationEntity entity);
 
-
+    @Mapping(target = "teams", ignore = true)
     FormationEntity toEntity(FormationModel model);
 
+    @Mapping(target = "teams", ignore = true)
     FormationEntity toEntity(FormationDTO dto);
 
     FormationDTO toDto(FormationEntity entity);

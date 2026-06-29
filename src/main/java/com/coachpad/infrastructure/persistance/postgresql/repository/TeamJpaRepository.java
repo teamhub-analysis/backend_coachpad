@@ -55,7 +55,7 @@ public interface TeamJpaRepository extends JpaRepository<TeamEntity, Long> {
     @EntityGraph(attributePaths = { "design", "design.colors" })
     Optional<TeamEntity> findWithDesignById(Long id);
 
-    @EntityGraph(attributePaths = { "coaches", "design", "design.colors", "formation", "players", "groups", "medicalStaff" })
+    @EntityGraph(attributePaths = { "design", "design.colors", "formation" })
     Optional<TeamEntity> findWithAllRelationsById(Long id);
 
     @Query("SELECT t FROM TeamEntity t")
