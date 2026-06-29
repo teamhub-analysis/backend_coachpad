@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.project;
 
 import com.coachpad.presentation.rest.dto.ProjectContentDTO;
 import com.coachpad.presentation.rest.dto.SceneDTO;

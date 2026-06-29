@@ -1,7 +1,7 @@
 package com.coachpad.presentation.rest.controller;
 
 import com.coachpad.presentation.rest.dto.*;
-import com.coachpad.domain.usecase.PlanningUseCases;
+import com.coachpad.infrastructure.service.project.PlanningUseCases;
 import com.coachpad.infrastructure.persistance.postgresql.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;

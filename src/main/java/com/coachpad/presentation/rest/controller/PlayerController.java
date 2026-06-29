@@ -4,7 +4,7 @@ import com.coachpad.domain.usecase.PlayerUseCase;
 import com.coachpad.presentation.rest.dto.PlayerDTO;
 import com.coachpad.presentation.rest.mapper.PlayerDTOMapper;
 import com.coachpad.domain.model.PlayerModel;
-import com.coachpad.infrastructure.service.FileStorageService;
+import com.coachpad.infrastructure.service.storage.FileStorageService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

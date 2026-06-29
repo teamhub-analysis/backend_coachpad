@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.dataimport;
 
 import com.coachpad.domain.model.util.PositionUtils;
 import com.coachpad.presentation.rest.dto.*;

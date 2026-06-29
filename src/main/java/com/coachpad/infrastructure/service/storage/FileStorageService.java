@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -6,8 +6,8 @@ import com.coachpad.infrastructure.persistance.postgresql.mapper.ProjectEntityMa
 import com.coachpad.domain.model.enums.ProjectCategory;
 import com.coachpad.infrastructure.persistance.postgresql.entity.ProjectEntity;
 import com.coachpad.infrastructure.persistance.postgresql.entity.UserEntity;
-import com.coachpad.infrastructure.service.ProjectService;
-import com.coachpad.infrastructure.service.TacticalDataService;
+import com.coachpad.infrastructure.service.project.ProjectService;
+import com.coachpad.infrastructure.service.project.TacticalDataService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,9 @@
-package com.coachpad.domain.usecase;
+package com.coachpad.infrastructure.service.project;
 
 import com.coachpad.presentation.rest.dto.*;
 import com.coachpad.domain.model.enums.ProjectCategory;
 import com.coachpad.infrastructure.persistance.postgresql.entity.ProjectEntity;
-import com.coachpad.infrastructure.service.ProjectService;
+import com.coachpad.infrastructure.service.project.ProjectService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

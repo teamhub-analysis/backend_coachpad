@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.project;
 
 import com.coachpad.domain.model.enums.ProjectCategory;
 import com.coachpad.infrastructure.persistance.postgresql.entity.ProjectEntity;
@@ -46,7 +46,10 @@ public class ProjectService {
     public ProjectEntity saveProjectForUser(ProjectEntity incoming, Long userId) {
         incoming.setUserId(userId);
 
-        // UPSERT : si le projet existe dÃƒÂ©jÃƒÂ , on remplace les scÃƒÂ¨nes
+        if (incoming.getId() == null) {
+            return ProjectJpaRepository.save(incoming);
+        }
+
         Optional<ProjectEntity> existing = ProjectJpaRepository.findById(incoming.getId());
         if (existing.isPresent()) {
             ProjectEntity current = existing.get();

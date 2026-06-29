@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.impl;
 
 import com.coachpad.domain.model.PlayerModel;
 import com.coachpad.domain.repository.PlayerRepository;

@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.impl;
 
 import com.coachpad.domain.model.PlayerModel;
 import com.coachpad.domain.model.TeamDesignModel;
@@ -22,8 +22,6 @@ public class TeamUseCaseImpl implements TeamUseCase {
     private final TeamRepository teamRepository;
     private final TeamDesignRepository teamDesignRepository;
     private final PlayerRepository playerRepository;
-    private final FileStorageService fileStorageService;
-
     @Override
     @Transactional(readOnly = true)
     public List<TeamModel> getAllTeams() {

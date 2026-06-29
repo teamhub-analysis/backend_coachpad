@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.impl;
 
 import com.coachpad.domain.model.FormationModel;
 import com.coachpad.domain.repository.FormationRepository;

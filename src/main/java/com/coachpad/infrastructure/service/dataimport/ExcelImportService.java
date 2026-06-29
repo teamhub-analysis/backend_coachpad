@@ -1,4 +1,4 @@
-package com.coachpad.infrastructure.service;
+package com.coachpad.infrastructure.service.dataimport;
 
 import com.coachpad.domain.model.util.PositionUtils;
 import com.coachpad.presentation.rest.dto.*;
@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.coachpad.infrastructure.service.ExcelUtils.*;
+import static com.coachpad.infrastructure.service.dataimport.ExcelUtils.*;
 
 @Slf4j
 @Service
