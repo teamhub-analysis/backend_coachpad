@@ -112,11 +112,6 @@ public class ExcelImportService {
             "nationality", "nationalitÃƒÂ©", "nationalite", "nat", "country",
             "pays", "nation", "origin", "origine");
 
-    private static final List<String> H_DOB = List.of(
-            "dob", "date of birth", "date_of_birth", "dateofbirth",
-            "date de naissance", "date_naissance", "naissance", "birthday",
-            "birth date", "birthdate", "born", "nÃƒÂ© le", "ne le", "age");
-
     private static final List<String> H_HEIGHT = List.of(
             "height", "taille", "hauteur", "height cm", "heightcm",
             "taille cm", "taille_cm", "cm");
@@ -641,8 +636,6 @@ public class ExcelImportService {
                     .assigned(true);
 
             if (roleCol >= 0) {
-                String role = getString(row, roleCol, null);
-                // We could map roles here if needed
             }
             if (nationalityCol >= 0) {
                 builder.nationality(getString(row, nationalityCol, null));

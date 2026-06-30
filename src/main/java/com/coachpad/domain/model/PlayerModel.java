@@ -17,7 +17,8 @@ public class PlayerModel {
     private LocalDate dateOfBirth;
     private String nationality;
     private String category;
-  
+    private String email;
+    private String phoneNumber;
     private String photoUrl;
     private Double heightCm;
     private Double weightKg;

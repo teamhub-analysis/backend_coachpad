@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -39,7 +40,8 @@ public class FileStorageService {
      * @return The relative path to the stored file
      */
     public String storeFile(MultipartFile file, String directory) {
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename(), "File must have a name");
+        String filename = StringUtils.cleanPath(originalFilename);
         try {
             if (file.isEmpty()) {
                 throw new RuntimeException("Failed to store empty file " + filename);

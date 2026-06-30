@@ -1,6 +1,7 @@
 package com.coachpad.infrastructure.persistance.postgresql.adapter;
 
 import com.coachpad.domain.model.PlayerModel;
+import com.coachpad.domain.model.TeamModel;
 import com.coachpad.infrastructure.persistance.postgresql.entity.PlayerEntity;
 import com.coachpad.infrastructure.persistance.postgresql.entity.TeamEntity;
 import com.coachpad.infrastructure.persistance.postgresql.repository.PlayerJpaRepository;
@@ -22,24 +23,8 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PlayerModel> getAllPlayers() {
-        return PlayerJpaRepository.findAll()
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<PlayerModel> getPlayerById(Long id) {
         return PlayerJpaRepository.findById(id)
-                .map(this::toModel);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<PlayerModel> getPlayerByEmail(String email) {
-        return PlayerJpaRepository.findByEmail(email)
                 .map(this::toModel);
     }
 
@@ -50,58 +35,6 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
                 .stream()
                 .map(this::toModel)
                 .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<PlayerModel> getPlayerByNumberAndTeamId(Integer number, Long teamId) {
-        return PlayerJpaRepository.findByNumberAndTeamId(number, teamId)
-                .map(this::toModel);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getPlayersByPosition(String position) {
-        return PlayerJpaRepository.findByMainPosition(position)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getPlayersByTeamIdAndPosition(Long teamId, String position) {
-        return PlayerJpaRepository.findByTeamIdAndMainPosition(teamId, position)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> searchPlayersByName(String name) {
-        return PlayerJpaRepository.searchByName(name)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public long countPlayersByTeamId(Long teamId) {
-        return PlayerJpaRepository.countByTeamId(teamId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean emailExists(String email) {
-        return PlayerJpaRepository.existsByEmail(email);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean numberExistsInTeam(Integer number, Long teamId) {
-        return PlayerJpaRepository.existsByNumberAndTeamId(number, teamId);
     }
 
     @Override
@@ -129,6 +62,8 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
         existing.setNumber(playerModel.getNumber());
         existing.setDateOfBirth(playerModel.getDateOfBirth());
         existing.setNationality(playerModel.getNationality());
+        existing.setEmail(playerModel.getEmail());
+        existing.setPhoneNumber(playerModel.getPhoneNumber());
         existing.setPhotoUrl(playerModel.getPhotoUrl());
         existing.setHeightCm(playerModel.getHeightCm());
         existing.setWeightKg(playerModel.getWeightKg());
@@ -152,79 +87,14 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
     @Override
     @Transactional
     public void deletePlayer(Long id) {
+        if (!PlayerJpaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Player not found with id: " + id);
+        }
         PlayerJpaRepository.deleteById(id);
     }
 
-    @Override
-    @Transactional
-    public void deletePlayersByTeamId(Long teamId) {
-        PlayerJpaRepository.deleteByTeamId(teamId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getActivePlayersByTeamId(Long teamId) {
-        return PlayerJpaRepository.findActivePlayersByTeamId(teamId)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getTopScorersByTeamId(Long teamId, int limit) {
-        return PlayerJpaRepository.findTopScorersByTeamId(teamId)
-                .stream()
-                .limit(limit)
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getTopAssistersByTeamId(Long teamId, int limit) {
-        return PlayerJpaRepository.findTopAssistersByTeamId(teamId)
-                .stream()
-                .limit(limit)
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getInjuredPlayersByTeamId(Long teamId) {
-        return PlayerJpaRepository.findInjuredPlayersByTeamId(teamId)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getSuspendedPlayersByTeamId(Long teamId) {
-        return PlayerJpaRepository.findSuspendedPlayersByTeamId(teamId)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getAvailablePlayersByTeamId(Long teamId) {
-        return PlayerJpaRepository.findAvailablePlayersByTeamId(teamId)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Double getAverageRatingByTeamId(Long teamId) {
-        return PlayerJpaRepository.calculateAverageRatingByTeamId(teamId);
-    }
-
     private PlayerModel toModel(PlayerEntity entity) {
-        return PlayerModel.builder()
+        var builder = PlayerModel.builder()
                 .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
@@ -232,6 +102,8 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
                 .number(entity.getNumber())
                 .dateOfBirth(entity.getDateOfBirth())
                 .nationality(entity.getNationality())
+                .email(entity.getEmail())
+                .phoneNumber(entity.getPhoneNumber())
                 .photoUrl(entity.getPhotoUrl())
                 .heightCm(entity.getHeightCm())
                 .weightKg(entity.getWeightKg())
@@ -246,8 +118,11 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
                 .speedRating(entity.getSpeedRating())
                 .staminaRating(entity.getStaminaRating())
                 .shootingRating(entity.getShootingRating())
-                .passingRating(entity.getPassingRating())
-                .build();
+                .passingRating(entity.getPassingRating());
+        if (entity.getTeam() != null) {
+            builder.team(TeamModel.builder().id(entity.getTeam().getId()).build());
+        }
+        return builder.build();
     }
 
     private PlayerEntity toEntity(PlayerModel model) {
@@ -259,6 +134,8 @@ public class PlayerPostgresqlAdapter implements PlayerRepository {
                 .number(model.getNumber())
                 .dateOfBirth(model.getDateOfBirth())
                 .nationality(model.getNationality())
+                .email(model.getEmail())
+                .phoneNumber(model.getPhoneNumber())
                 .photoUrl(model.getPhotoUrl())
                 .heightCm(model.getHeightCm())
                 .weightKg(model.getWeightKg())

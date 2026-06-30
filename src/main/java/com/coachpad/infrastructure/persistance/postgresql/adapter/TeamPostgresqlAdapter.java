@@ -3,6 +3,7 @@ package com.coachpad.infrastructure.persistance.postgresql.adapter;
 import com.coachpad.domain.model.*;
 import com.coachpad.infrastructure.persistance.postgresql.entity.*;
 import com.coachpad.infrastructure.persistance.postgresql.mapper.CoachEntityMapper;
+import com.coachpad.infrastructure.persistance.postgresql.repository.FormationJpaRepository;
 import com.coachpad.infrastructure.persistance.postgresql.repository.TeamJpaRepository;
 import com.coachpad.domain.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class TeamPostgresqlAdapter implements TeamRepository {
 
     private final TeamJpaRepository TeamJpaRepository;
+    private final FormationJpaRepository FormationJpaRepository;
     private final CoachEntityMapper coachEntityMapper;
 
     @Override
@@ -35,53 +37,77 @@ public class TeamPostgresqlAdapter implements TeamRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamModel> getTeamByName(String name) {
-        return TeamJpaRepository.findByName(name).map(this::toModel);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TeamModel> searchTeamsByName(String name) {
-        return TeamJpaRepository.searchByName(name)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TeamModel> getTeamsByFormationId(Long formationId) {
-        return TeamJpaRepository.findByFormationId(formationId)
-                .stream()
-                .map(this::toModel)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamModel> getTeamByHeadCoachId(Long coachId) {
-        return TeamJpaRepository.findByHeadCoachId(coachId).map(this::toModel);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public long countTeams() {
-        return TeamJpaRepository.count();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean teamNameExists(String name) {
-        return TeamJpaRepository.existsByName(name);
-    }
-
-    @Override
     @Transactional
-    public TeamModel createTeam(TeamModel teamModel) {
-        TeamEntity entity = toEntity(teamModel);
-        TeamEntity saved = TeamJpaRepository.save(entity);
-        return toModel(saved);
+    public TeamModel replaceTeamData(Long id, TeamModel teamModel) {
+        TeamEntity existing = TeamJpaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Team not found with id: " + id));
+
+        existing.setName(teamModel.getName());
+        existing.setNickname(teamModel.getNickname());
+        existing.setAgeCategory(teamModel.getAgeCategory());
+
+        if (teamModel.getFormation() != null && teamModel.getFormation().getId() != null) {
+            FormationEntity formation = FormationJpaRepository.findById(teamModel.getFormation().getId())
+                    .orElseThrow(() -> new RuntimeException("Formation not found with id: " + teamModel.getFormation().getId()));
+            existing.setFormation(formation);
+        }
+
+        existing.getPlayers().clear();
+        existing.getCoaches().clear();
+        existing.getMedicalStaff().clear();
+        TeamJpaRepository.flush();
+
+        if (teamModel.getPlayers() != null) {
+            teamModel.getPlayers().forEach(pm -> {
+                PlayerEntity pe = toPlayerEntity(pm);
+                pe.setTeam(existing);
+                existing.getPlayers().add(pe);
+            });
+        }
+
+        if (teamModel.getCoaches() != null) {
+            teamModel.getCoaches().forEach(cm -> {
+                CoachEntity ce = coachEntityMapper.toEntity(cm);
+                ce.setTeam(existing);
+                existing.getCoaches().add(ce);
+            });
+        }
+
+        if (teamModel.getMedicalStaff() != null) {
+            teamModel.getMedicalStaff().forEach(cm -> {
+                CoachEntity ce = coachEntityMapper.toEntity(cm);
+                ce.setTeam(existing);
+                existing.getMedicalStaff().add(ce);
+            });
+        }
+
+        if (teamModel.getDesign() != null) {
+            TeamDesignEntity de = existing.getDesign();
+            if (de == null) {
+                de = new TeamDesignEntity();
+                de.setTeam(existing);
+                existing.setDesign(de);
+            }
+            TeamDesignModel dm = teamModel.getDesign();
+            de.setStyle(dm.getStyle());
+            de.setLogoFilePath(dm.getLogoFilePath());
+            de.setLogoIconName(dm.getLogoIconName());
+            de.setJerseyDesign(dm.getJerseyDesign());
+            de.setUsePlayerPhotos(dm.isUsePlayerPhotos());
+            if (dm.getColors() != null) {
+                TeamKitColorsEntity ke = de.getColors();
+                if (ke == null) {
+                    ke = new TeamKitColorsEntity();
+                    de.setColors(ke);
+                }
+                ke.setPrimaryHex(dm.getColors().getPrimaryHex());
+                ke.setSecondaryHex(dm.getColors().getSecondaryHex());
+                ke.setTrimHex(dm.getColors().getTrimHex());
+            }
+        }
+
+        TeamEntity updated = TeamJpaRepository.save(existing);
+        return toModel(updated);
     }
 
     @Override
@@ -92,31 +118,13 @@ public class TeamPostgresqlAdapter implements TeamRepository {
         existing.setName(teamModel.getName());
         existing.setNickname(teamModel.getNickname());
         existing.setAgeCategory(teamModel.getAgeCategory());
+        if (teamModel.getFormation() != null && teamModel.getFormation().getId() != null) {
+            FormationEntity formation = FormationJpaRepository.findById(teamModel.getFormation().getId())
+                    .orElseThrow(() -> new RuntimeException("Formation not found with id: " + teamModel.getFormation().getId()));
+            existing.setFormation(formation);
+        }
         TeamEntity updated = TeamJpaRepository.save(existing);
         return toModel(updated);
-    }
-
-    @Override
-    @Transactional
-    public void deleteTeam(Long id) {
-        TeamJpaRepository.deleteById(id);
-    }
-
-    @Override
-    @Transactional
-    public TeamModel removeDesignFromTeam(Long teamId) {
-        TeamEntity existing = TeamJpaRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
-        existing.setDesign(null);
-        TeamEntity updated = TeamJpaRepository.save(existing);
-        return toModel(updated);
-    }
-
-    @Override
-    @Transactional
-    public void cleanupExcelTeams() {
-        List<TeamEntity> excelTeams = TeamJpaRepository.findBySource("EXCEL");
-        TeamJpaRepository.deleteAll(excelTeams);
     }
 
     private TeamModel toModel(TeamEntity entity) {
@@ -210,6 +218,32 @@ public class TeamPostgresqlAdapter implements TeamRepository {
                 .build();
     }
 
+    private PlayerEntity toPlayerEntity(PlayerModel model) {
+        return PlayerEntity.builder()
+                .firstName(model.getFirstName())
+                .lastName(model.getLastName())
+                .fullName(model.getFullName())
+                .number(model.getNumber())
+                .dateOfBirth(model.getDateOfBirth())
+                .nationality(model.getNationality())
+                .photoUrl(model.getPhotoUrl())
+                .heightCm(model.getHeightCm())
+                .weightKg(model.getWeightKg())
+                .preferredFoot(model.getPreferredFoot())
+                .mainPosition(model.getMainPosition())
+                .secondaryPositions(model.getSecondaryPositions())
+                .status(model.getStatus())
+                .matchesPlayed(model.getMatchesPlayed())
+                .totalGoals(model.getTotalGoals())
+                .totalAssists(model.getTotalAssists())
+                .currentRating(model.getCurrentRating())
+                .speedRating(model.getSpeedRating())
+                .staminaRating(model.getStaminaRating())
+                .shootingRating(model.getShootingRating())
+                .passingRating(model.getPassingRating())
+                .build();
+    }
+
     private SquadGroupModel toSquadGroupModel(SquadGroupEntity entity) {
         return SquadGroupModel.builder()
                 .id(entity.getId())
@@ -220,21 +254,5 @@ public class TeamPostgresqlAdapter implements TeamRepository {
                 .isVisible(entity.isVisible())
                 .isMainGroup(entity.isMainGroup())
                 .build();
-    }
-
-    private TeamEntity toEntity(TeamModel model) {
-        TeamEntity.TeamEntityBuilder builder = TeamEntity.builder()
-                .id(model.getId())
-                .name(model.getName())
-                .nickname(model.getNickname())
-                .ageCategory(model.getAgeCategory());
-
-        if (model.getFormation() != null && model.getFormation().getId() != null) {
-            builder.formation(FormationEntity.builder()
-                    .id(model.getFormation().getId())
-                    .build());
-        }
-
-        return builder.build();
     }
 }

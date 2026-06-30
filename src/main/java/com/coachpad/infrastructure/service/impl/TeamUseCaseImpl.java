@@ -1,7 +1,6 @@
 package com.coachpad.infrastructure.service.impl;
 
 import com.coachpad.domain.model.PlayerModel;
-import com.coachpad.domain.model.TeamDesignModel;
 import com.coachpad.domain.model.TeamModel;
 import com.coachpad.domain.repository.PlayerRepository;
 import com.coachpad.domain.repository.TeamDesignRepository;
@@ -22,6 +21,7 @@ public class TeamUseCaseImpl implements TeamUseCase {
     private final TeamRepository teamRepository;
     private final TeamDesignRepository teamDesignRepository;
     private final PlayerRepository playerRepository;
+
     @Override
     @Transactional(readOnly = true)
     public List<TeamModel> getAllTeams() {
@@ -35,44 +35,8 @@ public class TeamUseCaseImpl implements TeamUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamModel> getTeamByName(String name) {
-        return teamRepository.getTeamByName(name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TeamModel> searchTeamsByName(String name) {
-        return teamRepository.searchTeamsByName(name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TeamModel> getTeamsByFormationId(Long formationId) {
-        return teamRepository.getTeamsByFormationId(formationId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamModel> getTeamByHeadCoachId(Long coachId) {
-        return teamRepository.getTeamByHeadCoachId(coachId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public long countTeams() {
-        return teamRepository.countTeams();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean teamNameExists(String name) {
-        return teamRepository.teamNameExists(name);
-    }
-
-    @Override
-    public TeamModel createTeam(TeamModel team) {
-        return teamRepository.createTeam(team);
+    public TeamModel replaceTeamData(Long id, TeamModel team) {
+        return teamRepository.replaceTeamData(id, team);
     }
 
     @Override
@@ -81,40 +45,10 @@ public class TeamUseCaseImpl implements TeamUseCase {
     }
 
     @Override
-    public void deleteTeam(Long id) {
-        teamRepository.deleteTeam(id);
-    }
-
-    @Override
-    public void cleanupExcelTeams() {
-        teamRepository.cleanupExcelTeams();
-    }
-
-    @Override
-    public TeamModel removeDesignFromTeam(Long teamId) {
-        return teamRepository.removeDesignFromTeam(teamId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamDesignModel> getTeamDesign(Long teamId) {
-        return teamDesignRepository.getDesignByTeamId(teamId);
-    }
-
-    @Override
-    public TeamDesignModel createTeamDesign(TeamDesignModel design) {
-        return teamDesignRepository.createDesign(design);
-    }
-
-    @Override
-    public TeamDesignModel updateTeamDesign(Long designId, TeamDesignModel design) {
-        return teamDesignRepository.updateDesign(designId, design);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PlayerModel> getPlayersByTeamId(Long teamId) {
-        return playerRepository.getPlayersByTeamId(teamId);
+    public TeamModel updateTeamLogo(Long teamId, String photoUrl) {
+        teamDesignRepository.updateTeamLogo(teamId, photoUrl);
+        return teamRepository.getTeamById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found: " + teamId));
     }
 
     @Override
@@ -125,37 +59,5 @@ public class TeamUseCaseImpl implements TeamUseCase {
                     return playerRepository.createPlayer(player);
                 })
                 .orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
-    }
-
-    @Override
-    public List<PlayerModel> addPlayersToTeam(Long teamId, List<PlayerModel> players) {
-        TeamModel team = teamRepository.getTeamById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
-        return players.stream()
-                .peek(p -> p.setTeam(team))
-                .map(playerRepository::createPlayer)
-                .toList();
-    }
-
-    @Override
-    public void deletePlayersByTeamId(Long teamId) {
-        playerRepository.deletePlayersByTeamId(teamId);
-    }
-
-    @Override
-    public TeamDesignModel updateTeamLogo(Long teamId, String photoUrl) {
-        return teamDesignRepository.updateTeamLogo(teamId, photoUrl);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TeamDesignModel> getAllTeamDesigns() {
-        return teamDesignRepository.getAllDesigns();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<TeamDesignModel> getTeamDesignById(Long id) {
-        return teamDesignRepository.getDesignById(id);
     }
 }

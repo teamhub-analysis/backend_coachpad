@@ -2,14 +2,11 @@ package com.coachpad.presentation.rest.controller;
 
 import com.coachpad.domain.usecase.TeamUseCase;
 import com.coachpad.presentation.rest.dto.TeamDTO;
-import com.coachpad.presentation.rest.dto.TeamDesignDTO;
 import com.coachpad.presentation.rest.dto.PlayerDTO;
 import com.coachpad.presentation.rest.mapper.TeamDTOMapper;
-import com.coachpad.presentation.rest.mapper.TeamDesignDTOMapper;
 import com.coachpad.presentation.rest.mapper.PlayerDTOMapper;
 import com.coachpad.domain.model.PlayerModel;
 import com.coachpad.domain.model.TeamModel;
-import com.coachpad.domain.model.TeamDesignModel;
 import com.coachpad.infrastructure.service.storage.FileStorageService;
 import com.coachpad.infrastructure.service.dataimport.ExcelImportService;
 import com.coachpad.infrastructure.service.dataimport.CsvImportService;
@@ -34,7 +31,6 @@ public class TeamController {
     private final ExcelImportService excelImportService;
     private final CsvImportService csvImportService;
     private final TeamDTOMapper teamDTOMapper;
-    private final TeamDesignDTOMapper teamDesignDTOMapper;
     private final PlayerDTOMapper playerDTOMapper;
 
     @GetMapping
@@ -51,61 +47,6 @@ public class TeamController {
                 .map(teamDTOMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/name/{name}")
-    public ResponseEntity<TeamDTO> getTeamByName(@PathVariable String name) {
-        return teamUseCase.getTeamByName(name)
-                .map(teamDTOMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<TeamDTO>> searchTeamsByName(@RequestParam String name) {
-        List<TeamDTO> teams = teamUseCase.searchTeamsByName(name).stream()
-                .map(teamDTOMapper::toDTO)
-                .toList();
-        return ResponseEntity.ok(teams);
-    }
-
-    @GetMapping("/formation/{formationId}")
-    public ResponseEntity<List<TeamDTO>> getTeamsByFormationId(@PathVariable Long formationId) {
-        List<TeamDTO> teams = teamUseCase.getTeamsByFormationId(formationId).stream()
-                .map(teamDTOMapper::toDTO)
-                .toList();
-        return ResponseEntity.ok(teams);
-    }
-
-    @GetMapping("/coach/{coachId}")
-    public ResponseEntity<TeamDTO> getTeamByHeadCoachId(@PathVariable Long coachId) {
-        return teamUseCase.getTeamByHeadCoachId(coachId)
-                .map(teamDTOMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/count")
-    public ResponseEntity<Long> countTeams() {
-        long count = teamUseCase.countTeams();
-        return ResponseEntity.ok(count);
-    }
-
-    @GetMapping("/name-exists")
-    public ResponseEntity<Boolean> teamNameExists(@RequestParam String name) {
-        boolean exists = teamUseCase.teamNameExists(name);
-        return ResponseEntity.ok(exists);
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createTeam(@Valid @RequestBody TeamDTO teamDTO) {
-        try {
-            TeamModel model = teamDTOMapper.toModel(teamDTO);
-            TeamDTO createdTeam = teamDTOMapper.toDTO(teamUseCase.createTeam(model));
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdTeam);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PutMapping("/{id}")
@@ -126,73 +67,6 @@ public class TeamController {
         }
     }
 
-    @DeleteMapping("/cleanup-excel")
-    public ResponseEntity<Void> cleanupExcelTeams() {
-        teamUseCase.cleanupExcelTeams();
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTeam(@PathVariable Long id) {
-        try {
-            teamUseCase.deleteTeam(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/{teamId}/design")
-    public ResponseEntity<TeamDesignDTO> getTeamDesign(@PathVariable Long teamId) {
-        return teamUseCase.getTeamDesign(teamId)
-                .map(teamDesignDTOMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/{teamId}/design")
-    public ResponseEntity<?> createTeamDesign(
-            @PathVariable Long teamId,
-            @Valid @RequestBody TeamDesignDTO designDTO) {
-        try {
-            if (teamUseCase.getTeamById(teamId).isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            TeamDesignModel model = teamDesignDTOMapper.toModel(designDTO);
-            TeamDesignDTO created = teamDesignDTOMapper.toDTO(teamUseCase.createTeamDesign(model));
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{teamId}/design")
-    public ResponseEntity<?> updateTeamDesign(
-            @PathVariable Long teamId,
-            @Valid @RequestBody TeamDesignDTO designDTO) {
-        try {
-            TeamDesignModel existingDesign = teamUseCase.getTeamDesign(teamId)
-                    .orElseThrow(() -> new IllegalArgumentException("Design non trouvé pour cette équipe"));
-
-            TeamDesignModel model = teamDesignDTOMapper.toModel(designDTO);
-            TeamDesignDTO updated = teamDesignDTOMapper.toDTO(teamUseCase.updateTeamDesign(existingDesign.getId(), model));
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/{teamId}/design")
-    public ResponseEntity<?> removeDesignFromTeam(@PathVariable Long teamId) {
-        try {
-            TeamDTO team = teamDTOMapper.toDTO(teamUseCase.removeDesignFromTeam(teamId));
-            return ResponseEntity.ok(team);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-
     @PostMapping("/{id}/logo")
     public ResponseEntity<?> updateTeamLogo(
             @PathVariable("id") Long id,
@@ -210,14 +84,6 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/{teamId}/players")
-    public ResponseEntity<List<PlayerDTO>> getPlayersByTeamId(@PathVariable Long teamId) {
-        List<PlayerDTO> players = teamUseCase.getPlayersByTeamId(teamId).stream()
-                .map(playerDTOMapper::toDTO)
-                .toList();
-        return ResponseEntity.ok(players);
-    }
-
     @PostMapping("/{teamId}/players")
     public ResponseEntity<PlayerDTO> addPlayerToTeam(
             @PathVariable Long teamId,
@@ -230,35 +96,6 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/{teamId}/players/bulk")
-    public ResponseEntity<List<PlayerDTO>> addPlayersToTeam(
-            @PathVariable Long teamId,
-            @Valid @RequestBody List<PlayerDTO> playerDTOs) {
-        try {
-            List<PlayerModel> models = playerDTOs.stream()
-                    .map(playerDTOMapper::toModel)
-                    .toList();
-            List<PlayerDTO> created = teamUseCase.addPlayersToTeam(teamId, models).stream()
-                    .map(playerDTOMapper::toDTO)
-                    .toList();
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @DeleteMapping("/{teamId}/players")
-    public ResponseEntity<Void> deletePlayersByTeamId(@PathVariable Long teamId) {
-        try {
-            teamUseCase.deletePlayersByTeamId(teamId);
-            return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
@@ -330,18 +167,29 @@ public class TeamController {
         }
     }
 
-    @PostMapping("/import-direct")
-    public ResponseEntity<?> importTeamDirect(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/import-direct/{teamId}")
+    public ResponseEntity<?> importTeamDirect(
+            @PathVariable Long teamId,
+            @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Fichier vide"));
         }
 
         try {
-            TeamDTO savedTeam = excelImportService.importFullTeam(file);
+            String fileName = file.getOriginalFilename();
+            TeamDTO parsed = fileName != null && fileName.endsWith(".csv")
+                    ? csvImportService.importFullTeam(file)
+                    : excelImportService.importFullTeam(file);
+
+            TeamModel importModel = teamDTOMapper.toModel(parsed);
+            importModel.setId(teamId);
+            TeamModel saved = teamUseCase.replaceTeamData(teamId, importModel);
+            TeamDTO savedDTO = teamDTOMapper.toDTO(saved);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "success", true,
-                    "message", "Équipe importée avec succès sous le nom : " + savedTeam.getName(),
-                    "team", savedTeam));
+                    "message", "Équipe importée avec succès sous le nom : " + savedDTO.getName(),
+                    "team", savedDTO));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         } catch (Exception e) {

@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Configuration

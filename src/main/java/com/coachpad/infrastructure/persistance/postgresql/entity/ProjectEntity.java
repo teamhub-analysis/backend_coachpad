@@ -1,6 +1,5 @@
 package com.coachpad.infrastructure.persistance.postgresql.entity;
 
-import com.coachpad.infrastructure.persistance.postgresql.entity.SceneEntity;
 import com.coachpad.domain.model.enums.ProjectCategory;
 import jakarta.persistence.*;
 import lombok.*;

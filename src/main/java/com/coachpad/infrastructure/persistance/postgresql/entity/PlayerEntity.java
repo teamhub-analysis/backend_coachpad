@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "players", indexes = {
     @Index(name = "idx_player_team", columnList = "team_id"),
-    @Index(name = "idx_player_number_team", columnList = "number, team_id", unique = true)
+    @Index(name = "idx_player_number_team", columnList = "number, team_id")
 })
 @Getter
 @Setter
@@ -50,7 +50,7 @@ public class PlayerEntity {
     @Column(length = 50)
     private String nationality;
 
-    @Column(unique = true, length = 100)
+    @Column(length = 100)
     @Email(message = "Format email invalide")
     private String email;
 
