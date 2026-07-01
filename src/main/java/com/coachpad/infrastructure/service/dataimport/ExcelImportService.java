@@ -518,8 +518,8 @@ public class ExcelImportService {
             String position = positionCol >= 0 ? getString(row, positionCol, DEFAULT_POSITION) : DEFAULT_POSITION;
 
             PlayerDTO.PlayerDTOBuilder builder = PlayerDTO.builder()
-                    .firstName(firstName.trim())
-                    .lastName(lastName.trim())
+                    .firstName(firstName != null ? firstName.trim() : "")
+                    .lastName(lastName != null ? lastName.trim() : "")
                     .number(number)
                     .mainPosition(PositionUtils.normalize(position));
 

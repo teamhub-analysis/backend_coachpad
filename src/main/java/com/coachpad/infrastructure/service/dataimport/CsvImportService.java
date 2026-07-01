@@ -55,8 +55,9 @@ public class CsvImportService {
                 }
             }
 
-            String teamName = file.getOriginalFilename() != null 
-                ? file.getOriginalFilename().replaceAll("\\.csv$", "").replace("_", " ") 
+            String originalFilename = file.getOriginalFilename();
+            String teamName = originalFilename != null 
+                ? originalFilename.replaceAll("\\.csv$", "").replace("_", " ") 
                 : DEFAULT_TEAM_NAME;
 
             return TeamDTO.builder()
@@ -66,7 +67,7 @@ public class CsvImportService {
                     .coaches(new ArrayList<>())
                     .medicalStaff(new ArrayList<>())
                     .source("CSV")
-                    .importFileName(file.getOriginalFilename())
+                    .importFileName(originalFilename)
                     .design(TeamDesignDTO.builder()
                             .style(WidgetAppearance.JERSEY)
                             .jerseyDesign(JerseyDesign.SOLID)

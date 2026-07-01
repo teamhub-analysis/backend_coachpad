@@ -4,15 +4,12 @@ import com.coachpad.domain.model.enums.ProjectCategory;
 import com.coachpad.infrastructure.persistance.postgresql.entity.ProjectEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 /**
  * Repository pour Projects
  * Supporte le filtrage strict par catégorie pour respecter la hiérarchie.
  */
-@Repository
 public interface ProjectJpaRepository extends JpaRepository<ProjectEntity, String> {
 
     // ===== USER-SCOPED QUERIES =====

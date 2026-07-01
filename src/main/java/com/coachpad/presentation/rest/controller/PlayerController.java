@@ -25,7 +25,7 @@ public class PlayerController {
     private final FileStorageService fileStorageService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlayerDTO> getPlayerById(@PathVariable("id") Long id) {
+    public ResponseEntity<PlayerDTO> getPlayerById(@PathVariable Long id) {
         return playerUseCase.getPlayerById(id)
                 .map(playerDTOMapper::toDTO)
                 .map(ResponseEntity::ok)
@@ -34,9 +34,9 @@ public class PlayerController {
 
     @GetMapping("/team/{teamId}")
     public ResponseEntity<List<PlayerDTO>> getPlayersByTeamId(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(name = "offset", defaultValue = "0") int offset,
-            @RequestParam(name = "limit", defaultValue = "200") int limit) {
+            @PathVariable Long teamId,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "200") int limit) {
         List<PlayerDTO> players = playerUseCase.getPlayersByTeamId(teamId).stream()
                 .map(playerDTOMapper::toDTO)
                 .toList();
@@ -45,7 +45,7 @@ public class PlayerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PlayerDTO> updatePlayer(
-            @PathVariable("id") Long id,
+            @PathVariable Long id,
             @Valid @RequestBody PlayerDTO playerDTO) {
         try {
             PlayerModel model = playerDTOMapper.toModel(playerDTO);
@@ -57,7 +57,7 @@ public class PlayerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlayer(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deletePlayer(@PathVariable Long id) {
         try {
             playerUseCase.deletePlayer(id);
             return ResponseEntity.noContent().build();
@@ -68,8 +68,8 @@ public class PlayerController {
 
     @PostMapping("/{id}/photo")
     public ResponseEntity<PlayerDTO> updatePlayerPhoto(
-            @PathVariable("id") Long id,
-            @RequestParam("file") MultipartFile file) {
+            @PathVariable Long id,
+            @RequestParam MultipartFile file) {
         try {
             String photoUrl = fileStorageService.storeFile(file, FileStorageService.DIR_IMAGE);
             PlayerModel updated = playerUseCase.updatePlayerPhoto(id, photoUrl);
